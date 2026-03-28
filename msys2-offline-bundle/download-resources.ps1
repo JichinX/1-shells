@@ -31,6 +31,9 @@ $Config = @{
     GitHubMirror = "https://github.com"
     Packages = @("git", "curl", "wget", "vim", "nano", "zsh", "tar", "unzip", "man-db", "bat", "fd", "ripgrep", "fzf", "zoxide")
     UCRT64Packages = @("eza")
+    DownloadOhMyZsh = $true
+    ZshPlugins = @("zsh-autosuggestions", "zsh-syntax-highlighting")
+    DownloadStarship = $true
     DownloadFont = $true
 }
 
@@ -80,10 +83,20 @@ function Load-Config {
                     if (-not $GitHubMirror) { $Config.GitHubMirror = $value }
                 }
                 "packages" {
-                    $Config.Packages = $value -split '\s+'
+                    $Config.Packages = $value -split '[\s,]+'
                 }
                 "ucrt64_packages" {
-                    $Config.UCRT64Packages = $value -split '\s+'
+                    $Config.UCRT64Packages = $value -split '[\s,]+'
+                }
+                "download_ohmyzsh" {
+                    $Config.DownloadOhMyZsh = ($value -eq 'true')
+                }
+                "zsh_plugins" {
+                    # 支持逗号或空格分隔
+                    $Config.ZshPlugins = $value -split '[\s,]+'
+                }
+                "download_starship" {
+                    $Config.DownloadStarship = ($value -eq 'true')
                 }
                 "download_font" {
                     $Config.DownloadFont = ($value -eq 'true')
@@ -267,52 +280,51 @@ Write-Host "[6/7] 下载工具和插件..." -ForegroundColor Green
 $webClient = New-Object System.Net.WebClient
 
 # Oh My Zsh
-Write-Host "    -> Oh My Zsh" -ForegroundColor Gray
-$ohmyzshUrl = "$($Config.GitHubMirror)/ohmyzsh/ohmyzsh/archive/refs/heads/master.zip"
-$ohmyzshZip = Join-Path $toolsPath "oh-my-zsh.zip"
-try {
-    $webClient.DownloadFile($ohmyzshUrl, $ohmyzshZip)
-} catch {
-    Write-Host "       失败: $_" -ForegroundColor Yellow
+if ($Config.DownloadOhMyZsh) {
+    Write-Host "    -> Oh My Zsh" -ForegroundColor Gray
+    $ohmyzshUrl = "$($Config.GitHubMirror)/ohmyzsh/ohmyzsh/archive/refs/heads/master.zip"
+    $ohmyzshZip = Join-Path $toolsPath "oh-my-zsh.zip"
+    try {
+        $webClient.DownloadFile($ohmyzshUrl, $ohmyzshZip)
+    } catch {
+        Write-Host "       失败: $_" -ForegroundColor Yellow
+    }
 }
 
-# zsh-autosuggestions
-Write-Host "    -> zsh-autosuggestions" -ForegroundColor Gray
-$autosuggestUrl = "$($Config.GitHubMirror)/zsh-users/zsh-autosuggestions/archive/refs/heads/master.zip"
-$autosuggestZip = Join-Path $toolsPath "zsh-autosuggestions.zip"
-try {
-    $webClient.DownloadFile($autosuggestUrl, $autosuggestZip)
-} catch {
-    Write-Host "       失败: $_" -ForegroundColor Yellow
-}
-
-# zsh-syntax-highlighting
-Write-Host "    -> zsh-syntax-highlighting" -ForegroundColor Gray
-$syntaxUrl = "$($Config.GitHubMirror)/zsh-users/zsh-syntax-highlighting/archive/refs/heads/master.zip"
-$syntaxZip = Join-Path $toolsPath "zsh-syntax-highlighting.zip"
-try {
-    $webClient.DownloadFile($syntaxUrl, $syntaxZip)
-} catch {
-    Write-Host "       失败: $_" -ForegroundColor Yellow
+# Zsh 插件
+foreach ($plugin in $Config.ZshPlugins) {
+    $pluginName = $plugin.Trim()
+    if ([string]::IsNullOrWhiteSpace($pluginName)) { continue }
+    
+    Write-Host "    -> $pluginName" -ForegroundColor Gray
+    $pluginUrl = "$($Config.GitHubMirror)/zsh-users/$pluginName/archive/refs/heads/master.zip"
+    $pluginZip = Join-Path $toolsPath "$pluginName.zip"
+    try {
+        $webClient.DownloadFile($pluginUrl, $pluginZip)
+    } catch {
+        Write-Host "       失败: $_" -ForegroundColor Yellow
+    }
 }
 
 # Starship
-Write-Host "    -> Starship" -ForegroundColor Gray
-$starshipUrl = "$($Config.GitHubMirror)/starship/starship/releases/latest/download/starship-x86_64-pc-windows-msvc.zip"
-$starshipZip = Join-Path $toolsPath "starship.zip"
-try {
-    $webClient.DownloadFile($starshipUrl, $starshipZip)
-    
-    # 解压到临时目录
-    $tempDir = Join-Path $env:TEMP "starship-temp"
-    Expand-Archive -Path $starshipZip -DestinationPath $tempDir -Force
-    
-    # 移动 exe 到工具目录
-    Move-Item -Path "$tempDir\starship.exe" -Destination $toolsPath -Force
-    Remove-Item -Path $starshipZip -Force
-    Remove-Item -Path $tempDir -Recurse -Force
-} catch {
-    Write-Host "       失败: $_" -ForegroundColor Yellow
+if ($Config.DownloadStarship) {
+    Write-Host "    -> Starship" -ForegroundColor Gray
+    $starshipUrl = "$($Config.GitHubMirror)/starship/starship/releases/latest/download/starship-x86_64-pc-windows-msvc.zip"
+    $starshipZip = Join-Path $toolsPath "starship.zip"
+    try {
+        $webClient.DownloadFile($starshipUrl, $starshipZip)
+        
+        # 解压到临时目录
+        $tempDir = Join-Path $env:TEMP "starship-temp"
+        Expand-Archive -Path $starshipZip -DestinationPath $tempDir -Force
+        
+        # 移动 exe 到工具目录
+        Move-Item -Path "$tempDir\starship.exe" -Destination $toolsPath -Force
+        Remove-Item -Path $starshipZip -Force
+        Remove-Item -Path $tempDir -Recurse -Force
+    } catch {
+        Write-Host "       失败: $_" -ForegroundColor Yellow
+    }
 }
 
 # Nerd Font（可选）

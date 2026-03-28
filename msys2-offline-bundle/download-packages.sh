@@ -65,8 +65,10 @@ parse_config() {
             
             case "$key" in
                 packages)
-                    # 读取包列表（空格分隔）
+                    # 读取包列表（支持空格或逗号分隔）
                     if [[ -n "$value" ]]; then
+                        # 将逗号替换为空格，统一格式
+                        value="${value//,/ }"
                         IFS=' ' read -ra PACKAGES <<< "$value"
                         echo "    -> 已加载 MSYS2 包列表: ${#PACKAGES[@]} 个"
                     fi
@@ -74,6 +76,8 @@ parse_config() {
                 ucrt64_packages)
                     # 读取 UCRT64 包列表
                     if [[ -n "$value" ]]; then
+                        # 将逗号替换为空格，统一格式
+                        value="${value//,/ }"
                         IFS=' ' read -ra UCRT64_PACKAGES <<< "$value"
                         echo "    -> 已加载 UCRT64 包列表: ${#UCRT64_PACKAGES[@]} 个"
                     fi
