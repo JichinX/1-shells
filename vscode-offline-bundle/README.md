@@ -29,6 +29,26 @@
 
 ## 服务器端部署
 
+### 步骤 1：配置客户端（关键！）
+
+**⚠️ 重要**：VSCode ≥ 1.79.0 版本需要配置客户端，否则会提示 `localServerDownload failed`。
+
+在你的 **本地 VSCode 客户端**添加配置：
+
+- **Windows**: `%APPDATA%\Code\User\settings.json`
+- **macOS/Linux**: `~/.config/Code/User/settings.json`
+
+添加：
+```json
+{
+  "remote.SSH.localServerDownload": "always"
+}
+```
+
+这会阻止远程端自动 wget，使用你部署好的离线包。
+
+### 步骤 2：传输和部署
+
 ```bash
 # 1. 将 vscode-offline-bundle 目录传到服务器
 scp -r vscode-offline-bundle user@server:/opt/
@@ -37,6 +57,21 @@ scp -r vscode-offline-bundle user@server:/opt/
 cd /opt/vscode-offline-bundle
 chmod +x deploy-server.sh
 sudo ./deploy-server.sh --install-extensions
+```
+
+### 步骤 3：验证部署
+
+在服务器上检查：
+
+```bash
+# 检查目录结构
+ls -la ~/.vscode-server/cli/servers/Stable-*/
+
+# 检查标记文件
+ls -la ~/.vscode-server/vscode-cli-*.done
+
+# 验证 commit ID（应该和本地 VSCode 一致）
+cat /opt/vscode-offline-bundle/vscode-server/commit-id.txt
 ```
 
 ## 配置文件
@@ -55,3 +90,48 @@ EOF
 ```
 
 详见 `config.conf` 中的注释。
+
+## 故障排查
+
+### ❌ 错误：localServerDownload failed
+
+**原因**：客户端没有配置 `remote.SSH.localServerDownload: "always"`
+
+**解决**：见上方"步骤 1：配置客户端"
+
+### ❌ 错误：仍然在下载/0 字节文件
+
+**原因**：
+1. 客户端配置未生效（重启 VSCode）
+2. 远程端有缓存
+
+**解决**：
+```bash
+# 1. 重启 VSCode 客户端
+
+# 2. 在服务器清空缓存
+rm -rf ~/.vscode-server/*
+
+# 3. 重新部署
+cd /opt/vscode-offline-bundle
+sudo ./deploy-server.sh
+```
+
+### ❌ 错误：版本不匹配
+
+**检查**：
+```bash
+# 本地 VSCode：Help → About → 查看 Commit
+
+# 服务器检查：
+cat /opt/vscode-offline-bundle/vscode-server/commit-id.txt
+```
+
+**解决**：重新下载对应版本的离线包
+
+### ❌ 错误：权限不足
+
+**解决**：
+```bash
+chmod -R u+rwx ~/.vscode-server
+```
