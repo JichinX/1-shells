@@ -186,19 +186,23 @@ try {
 Write-Host "[3/7] 更新 MSYS2 系统..." -ForegroundColor Green
 
 try {
-    # 第一次更新
+    # 第一次更新（更新核心系统）
+    # 使用 bash -lc 确保环境变量正确加载
     Start-Process -FilePath "$Msys2InstallPath\msys2_shell.cmd" `
-        -ArgumentList "-ucrt64", "-defterm", "-no-start", "-c", "pacman -Syu --noconfirm --ask=20" `
+        -ArgumentList "-ucrt64", "-defterm", "-no-start", "-here", "-c", "bash -lc 'pacman -Sy --noconfirm'" `
         -Wait -NoNewWindow
     
-    # 第二次更新
+    Write-Host "    -> 软件源同步完成" -ForegroundColor Gray
+    
+    # 第二次更新（更新所有包）
     Start-Process -FilePath "$Msys2InstallPath\msys2_shell.cmd" `
-        -ArgumentList "-ucrt64", "-defterm", "-no-start", "-c", "pacman -Su --noconfirm" `
+        -ArgumentList "-ucrt64", "-defterm", "-no-start", "-here", "-c", "bash -lc 'pacman -Su --noconfirm'" `
         -Wait -NoNewWindow
     
     Write-Host "    -> 系统更新完成" -ForegroundColor Gray
 } catch {
     Write-Host "    -> 更新可能未完全成功，继续..." -ForegroundColor Yellow
+    Write-Host "    -> 错误详情: $_" -ForegroundColor Gray
 }
 
 # ============================================
