@@ -226,6 +226,63 @@ A:
 - 或直接运行: `zsh`
 - 检查 `~/.bashrc` 中是否有自动启动配置
 
+### Q: zsh 未正确安装
+A:
+**症状**：运行 `zsh` 提示命令未找到，或 zsh 无法启动
+
+**检查步骤**：
+1. 检查离线资源是否包含 zsh 包：
+   ```powershell
+   # 在 Windows PowerShell 中
+   dir offline-resources\packages\*zsh*
+   ```
+   应该能看到类似 `zsh-5.9-1-x86_64.pkg.tar.zst` 的文件
+
+2. 检查 MSYS2 中是否安装了 zsh：
+   ```bash
+   # 在 MSYS2 UCRT64 中
+   pacman -Qs zsh
+   ```
+   如果没有输出，说明 zsh 未安装
+
+3. 查看 MSYS2 软件包缓存：
+   ```bash
+   ls /var/cache/pacman/pkg/ | grep zsh
+   ```
+
+**解决方法**：
+
+**方法 1：手动安装 zsh 包**
+```bash
+# 在 MSYS2 UCRT64 中
+cd ~/offline-tools/packages/  # 或离线资源所在位置
+pacman -U zsh-*.pkg.tar.zst
+```
+
+**方法 2：重新运行安装脚本**
+```powershell
+# 在 Windows PowerShell（管理员）中
+cd offline-resources\scripts
+.\offline-install-msys2.ps1 -ResourcesPath ".."
+```
+
+**方法 3：检查依赖包**
+zsh 依赖以下包，确保它们也被下载和安装：
+- `libpcre` 和 `libpcre2`
+- `ncurses`
+- `readline`
+- `gdbm`
+
+```bash
+# 检查依赖是否安装
+pacman -Qs "libpcre|ncurses|readline|gdbm"
+```
+
+**预防措施**：
+- 使用最新版本的 `download-resources.ps1`（已修复 bash 数组语法错误）
+- 确保 `config.conf` 中 `packages` 列表包含 zsh 及其依赖
+- 下载完成后，检查 `offline-resources/packages/` 是否有 20+ 个包文件
+
 ### Q: 某些工具（如 eza）没有安装
 A: 
 - 部分工具可能不在 MSYS2 官方源中

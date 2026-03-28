@@ -202,7 +202,8 @@ $downloadScript = @'
 # 更新软件源
 pacman -Sy
 
-# 定义需要的包（硬编码列表，PACKAGES=(
+# 定义需要的包（硬编码列表）
+PACKAGES=(
     zsh git curl wget vim nano tar unzip man-db
     bat fd ripgrep fzf zoxide
     libpcre libpcre2 ncurses readline gdbm
