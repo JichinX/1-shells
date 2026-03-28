@@ -1,0 +1,27 @@
+# 下载的资源输出目录
+offline-resources/
+
+# 软件包缓存
+packages/
+*.pkg.tar.zst
+*.pkg.tar.xz
+
+# 临时文件
+*.tmp
+*.temp
+*.log
+
+# 压缩包
+*.zip
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# macOS
+.DS_Store
+
+# 编辑器
+*.swp
+*.swo
+*~

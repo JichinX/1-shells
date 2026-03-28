@@ -9,6 +9,7 @@
 | [homebrew-mirrors](./homebrew-mirrors/) | Homebrew 国内镜像源一键替换，支持 USTC / TUNA / 阿里云 / 腾讯云 |
 | [vscode-offline-bundle](./vscode-offline-bundle/) | VSCode 离线资源一键下载，含 Server、扩展、code-server、openvscode-server |
 | [jetbrains-offline-bundle](./jetbrains-offline-bundle/) | JetBrains 离线资源一键下载，支持 IntelliJ IDEA、PyCharm、WebStorm 等 |
+| [msys2-offline-bundle](./msys2-offline-bundle/) | MSYS2 离线环境一键配置，含 Zsh、Oh My Zsh、Starship、现代 CLI 工具 |
 
 ## 快速使用
 
@@ -52,6 +53,21 @@ cd 1-shells/jetbrains-offline-bundle
 
 ```bash
 sudo ./deploy-server.sh --product IU --user developer
+```
+
+### MSYS2 离线环境
+
+Windows 环境离线配置，提供接近原生 Linux 的 shell 体验：
+
+```powershell
+# 在有外网的 Windows 机器上，下载资源
+.\download-resources.ps1 -OutputPath ".\offline-resources"
+
+# 拷贝到离线环境后安装
+.\offline-resources\scripts\offline-install-msys2.ps1
+
+# 在 MSYS2 中配置 Zsh 环境
+bash ~/scripts/offline-setup-zsh.sh
 ```
 
 详见各脚本目录下的 README。
