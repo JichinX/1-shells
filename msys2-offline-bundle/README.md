@@ -26,6 +26,38 @@
 - starship（现代 Prompt）
 - 完整的别名和快捷键配置
 
+## 🆕 最新更新
+
+### 2026-03-28 更新内容
+
+✅ **配置文件支持**
+- 新增 `config.conf` 配置文件
+- 支持自定义镜像源（MSYS2 和 GitHub）
+- 支持自定义软件包列表
+- 配置优先级：命令行参数 > 配置文件 > 默认值
+
+✅ **PowerShell 5.1 兼容性修复**
+- 修复 `&&` 语法错误（PowerShell 5.1 不支持）
+- 改用独立的 `Start-Process` 调用
+- 完全兼容 Windows 10 默认 PowerShell 版本
+
+✅ **插件安装增强**
+- `offline-setup-zsh.sh` 支持从 zip 文件安装
+- 同时支持目录和 zip 文件两种格式
+- 改进错误提示和安装日志
+
+✅ **新增下载脚本**
+- `download-packages.sh` - 在 MSYS2 环境中下载软件包
+- 支持导出到 `~/offline-packages` 目录
+
+### 使用建议
+
+1. **首次使用**：编辑 `config.conf` 配置镜像源（国内用户）
+2. **PowerShell 版本**：脚本已兼容 5.1+，无需升级 PowerShell
+3. **插件格式**：推荐使用 zip 格式（体积更小，传输更快）
+
+---
+
 ## 🚀 使用方法
 
 ### 完整流程（推荐）
@@ -38,11 +70,17 @@
 # 设置执行策略（如需要）
 Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
 
-# 运行下载脚本
+# 方式 1: 使用配置文件（推荐）
+# 先编辑 config.conf 配置镜像源和软件包列表
 .\download-resources.ps1
 
-# 或指定输出路径
+# 方式 2: 命令行参数
 .\download-resources.ps1 -OutputPath "D:\offline-resources"
+
+# 方式 3: 使用国内镜像源
+.\download-resources.ps1 `
+    -Msys2Mirror "https://mirrors.tuna.tsinghua.edu.cn/msys2/distrib" `
+    -GitHubMirror "https://ghproxy.com/https://github.com"
 ```
 
 下载完成后，会生成以下结构：
@@ -200,6 +238,23 @@ A:
 - 如果网络稳定，也可以使用 `setup-shell.sh`（在线版本）
 - 离线脚本不需要任何网络连接
 
+### Q: 插件安装失败（zip 文件）
+A:
+- 确保 zip 文件完整（未损坏）
+- 检查 zip 文件是否在 `~/offline-tools/` 目录
+- 支持的 zip 文件：
+  - `oh-my-zsh.zip`
+  - `zsh-autosuggestions.zip`
+  - `zsh-syntax-highlighting.zip`
+  - `starship.zip`
+- 如果 zip 安装失败，脚本会尝试从目录安装
+
+### Q: PowerShell 脚本报错 "&& 附近有语法错误"
+A:
+- **已修复**：最新版本已兼容 PowerShell 5.1
+- 如果仍有问题，请确认使用的是最新版本
+- 或升级到 PowerShell 7.x（可选）
+
 ## 📝 自定义
 
 ### 配置文件
@@ -262,29 +317,49 @@ plugins=(
 
 如果需要其他工具，在有外网的环境：
 
-```powershell
-# 下载额外的软件包到离线资源目录
-# 然后在离线环境手动安装
+#### 方法 1：使用 download-packages.sh（推荐）
+
+在**有外网的 MSYS2 UCRT64** 环境中运行：
+
+```bash
+# 在 MSYS2 UCRT64 终端中
+cd /path/to/msys2-offline-bundle
+bash download-packages.sh
+
+# 软件包会下载到 ~/offline-packages/
+# 然后可以打包传输到离线环境
+tar -czf offline-packages.tar.gz ~/offline-packages/
 ```
+
+#### 方法 2：手动下载
 
 在 MSYS2 中：
 
 ```bash
+# 下载单个包（不安装）
+pacman -Sw --noconfirm 包名
+
+# 查看缓存位置
+ls /var/cache/pacman/pkg/
+
 # 手动安装本地包
 pacman -U /path/to/package.pkg.tar.zst
 ```
 
 ## 🗂️ 文件清单
 
+### 配置文件
+- `config.conf` - 下载配置文件（镜像源、软件包列表等）
+
+### 离线脚本（推荐）
+- `download-resources.ps1` - 外网下载资源（支持配置文件）
+- `offline-install-msys2.ps1` - 离线安装 MSYS2
+- `offline-setup-zsh.sh` - 离线配置 Zsh（支持 zip 文件安装）
+- `download-packages.sh` - 在 MSYS2 环境中下载软件包
+
 ### 在线脚本（已弃用，仅作参考）
 - ~~`install-msys2.ps1`~~ - 在线安装脚本
 - ~~`setup-shell.sh`~~ - 在线配置脚本
-
-### 离线脚本（推荐）
-- `download-resources.ps1` - 外网下载资源
-- `offline-install-msys2.ps1` - 离线安装 MSYS2
-- `offline-setup-zsh.sh` - 离线配置 Zsh
-- `README.md` - 本文档
 
 ## 🔄 卸载
 
