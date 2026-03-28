@@ -38,11 +38,17 @@
 # 设置执行策略（如需要）
 Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
 
-# 运行下载脚本
+# 方式1: 使用默认配置（自动读取 config.conf）
 .\download-resources.ps1
 
-# 或指定输出路径
+# 方式2: 指定输出路径
 .\download-resources.ps1 -OutputPath "D:\offline-resources"
+
+# 方式3: 使用自定义配置文件
+.\download-resources.ps1 -ConfigFile ".\my-config.conf"
+
+# 方式4: 命令行参数覆盖配置文件
+.\download-resources.ps1 -Msys2Mirror "https://mirrors.tuna.tsinghua.edu.cn/msys2/distrib"
 ```
 
 下载完成后，会生成以下结构：
@@ -162,10 +168,13 @@ bash ~/scripts/offline-setup-zsh.sh
 ### Q: 下载资源脚本失败
 A: 
 - 检查网络连接
-- 如果在中国大陆，可能需要配置代理或使用镜像
+- 如果在中国大陆，编辑 `config.conf` 使用国内镜像：
+  ```ini
+  msys2_mirror = https://mirrors.tuna.tsinghua.edu.cn/msys2/distrib
+  github_mirror = https://ghproxy.com/https://github.com
+  ```
+- 或命令行指定镜像：`.\download-resources.ps1 -Msys2Mirror "https://mirrors.tuna.tsinghua.edu.cn/msys2/distrib"`
 - 可以手动下载 MSYS2 和工具，放到对应目录
-
-### Q: 离线安装软件包失败
 A: 
 - 确保 `offline-resources\packages` 目录有 `.pkg.tar.zst` 文件
 - 如果包不完整，可以在 MSYS2 中单独安装缺失的包
@@ -196,6 +205,40 @@ A:
 - 离线脚本不需要任何网络连接
 
 ## 📝 自定义
+
+### 配置文件
+
+编辑 `config.conf` 自定义下载选项：
+
+```ini
+# 基础配置
+arch = x86_64
+output = .\offline-resources
+
+# 镜像源（国内用户建议修改）
+msys2_mirror = https://mirrors.tuna.tsinghua.edu.cn/msys2/distrib
+github_mirror = https://ghproxy.com/https://github.com
+
+# 软件包列表
+packages = git curl wget vim nano zsh tar unzip man-db bat fd ripgrep fzf zoxide
+ucrt64_packages = eza
+
+# 可选项
+download_font = true
+```
+
+**镜像源选项：**
+- **MSYS2 镜像**：
+  - 官方：`https://repo.msys2.org/distrib`
+  - 清华：`https://mirrors.tuna.tsinghua.edu.cn/msys2/distrib`
+  - 中科大：`https://mirrors.ustc.edu.cn/msys2/distrib`
+  
+- **GitHub 镜像**（国内加速）：
+  - 官方：`https://github.com`
+  - GitHub Proxy：`https://ghproxy.com/https://github.com`
+  - FastGit：`https://hub.fastgit.xyz`
+
+**优先级：** 命令行参数 > 配置文件 > 默认值
 
 ### 添加更多插件
 
