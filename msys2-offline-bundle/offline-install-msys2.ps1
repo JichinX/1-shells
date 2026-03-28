@@ -107,14 +107,14 @@ pacman -U --noconfirm /var/cache/pacman/pkg/*.pkg.tar.zst
 '@
         
         try {
-            # 先同步软件源（PowerShell 5.1 不支持 &&，需分开执行）
+            # 先同步软件源（使用 bash -lc 确保环境正确）
             Start-Process -FilePath "$InstallPath\msys2_shell.cmd" `
-                -ArgumentList "-ucrt64", "-defterm", "-no-start", "-c", "pacman -Sy --noconfirm" `
+                -ArgumentList "-ucrt64", "-defterm", "-no-start", "-here", "-c", "bash -lc 'pacman -Sy --noconfirm'" `
                 -Wait -NoNewWindow
             
-            # 再安装软件包
+            # 再安装软件包（使用 bash 展开通配符）
             Start-Process -FilePath "$InstallPath\msys2_shell.cmd" `
-                -ArgumentList "-ucrt64", "-defterm", "-no-start", "-c", "pacman -U --noconfirm /var/cache/pacman/pkg/*.pkg.tar.zst" `
+                -ArgumentList "-ucrt64", "-defterm", "-no-start", "-here", "-c", "bash -lc 'pacman -U --noconfirm /var/cache/pacman/pkg/*.pkg.tar.{zst,xz}'" `
                 -Wait -NoNewWindow
             
             Write-Host "    -> 软件包安装完成" -ForegroundColor Gray
