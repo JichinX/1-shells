@@ -193,41 +193,39 @@ try {
 # ============================================
 Write-Host "[4/7] 下载所有需要的软件包..." -ForegroundColor Green
 
-# 创建下载脚本
-$packagesList = $Config.Packages -join " "
-$ucrt64List = ($Config.UCRT64Packages | ForEach-Object { "mingw-w64-ucrt-x86_64-$_" }) -join " "
-
-$downloadScript = @"
+# 创建下载脚本（改进版）
+# 生成包列表（直接硬编码到脚本中）
+$downloadScript = @'
 #!/bin/bash
 # 批量下载软件包
 
 # 更新软件源
 pacman -Sy
 
-# 定义需要的包
-PACKAGES=(
-    $packagesList
+# 定义需要的包（硬编码列表，PACKAGES=(
+    zsh git curl wget vim nano tar unzip man-db
+    bat fd ripgrep fzf zoxide
     libpcre libpcre2 ncurses readline gdbm
 )
 
 UCRT64_PACKAGES=(
-    $ucrt64List
+    mingw-w64-ucrt-x86_64-eza
 )
 
 echo "下载 MSYS2 包..."
-for pkg in "\${PACKAGES[@]}"; do
-    echo "  -> \$pkg"
-    pacman -Sw --noconfirm --needed "\$pkg" 2>/dev/null || true
+for pkg in "${PACKAGES[@]}"; do
+    echo "  -> $pkg"
+    pacman -Sw --noconfirm --needed "$pkg" 2>/dev/null || true
 done
 
 echo "下载 UCRT64 包..."
-for pkg in "\${UCRT64_PACKAGES[@]}"; do
-    echo "  -> \$pkg"
-    pacman -Sw --noconfirm --needed "\$pkg" 2>/dev/null || true
+for pkg in "${UCRT64_PACKAGES[@]}"; do
+    echo "  -> $pkg"
+    pacman -Sw --noconfirm --needed "$pkg" 2>/dev/null || true
 done
 
 echo "下载完成！"
-"@
+'@
 
 $scriptPath = Join-Path $Msys2InstallPath "download-pkgs.sh"
 $downloadScript | Out-File -FilePath $scriptPath -Encoding ASCII -NoNewline
