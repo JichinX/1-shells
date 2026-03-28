@@ -1,0 +1,169 @@
+{
+  // ==============================================================================
+  // VSCode 离线 + 远程开发推荐配置
+  // 场景：离线环境 | Python + SQLAlchemy + FastAPI | 内网 AI 网关
+  // 版本：VSCode ≥ 1.79.0
+  // ==============================================================================
+  
+  // ============================================
+  // 远程开发配置（离线环境关键配置）
+  // ============================================
+  
+  // 关键！阻止远程服务器自动 wget，使用本地部署的离线包
+  "remote.SSH.localServerDownload": "always",
+  
+  // 启用持久化进程模式，支持 SSH 断线重连
+  "remote.SSH.useExecServer": true,
+  
+  // 远程连接超时设置（单位：秒）
+  "remote.SSH.connectTimeout": 60,
+  
+  // 显示登录终端，方便调试连接问题
+  "remote.SSH.showLoginTerminal": true,
+  
+  // 启用远程文件系统监听
+  "remote.SSH.useLocalServer": true,
+  
+  // ============================================
+  // Python 开发配置
+  // ============================================
+  
+  // Python 解释器路径（在远程服务器上）
+  // 建议使用虚拟环境，例如：~/.venv/bin/python
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+  
+  // 语言服务器：Pylance（功能最强）或 Jedi（轻量级）
+  "python.languageServer": "Pylance",
+  
+  // 类型检查级别
+  "python.analysis.typeCheckingMode": "basic",
+  
+  // 自动导入补全
+  "python.analysis.completeFunctionParens": true,
+  "python.analysis.autoImportCompletions": true,
+  
+  // 代码格式化工具：Black（推荐）或 autopep8
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    }
+  },
+  
+  // Linting 配置（可选：flake8 或 pylint）
+  "python.linting.enabled": true,
+  "python.linting.pylintEnabled": false,
+  "python.linting.flake8Enabled": true,
+  "python.linting.flake8Args": [
+    "--max-line-length=120",
+    "--ignore=E501,W503"
+  ],
+  
+  // 测试配置
+  "python.testing.pytestEnabled": true,
+  "python.testing.unittestEnabled": false,
+  
+  // ============================================
+  // FastAPI + SQLAlchemy 配置
+  // ============================================
+  
+  // 自动保存策略（FastAPI 热重载需要）
+  "files.autoSave": "afterDelay",
+  "files.autoSaveDelay": 1000,
+  
+  // 文件监听（用于热重载）
+  "files.watcherExclude": {
+    "**/__pycache__/**": true,
+    "**/node_modules/**": true,
+    "**/.venv/**": true
+  },
+  
+  // 数据库文件关联（SQLite）
+  "files.associations": {
+    "*.db": "sqlite",
+    "*.sqlite": "sqlite",
+    "*.sqlite3": "sqlite"
+  },
+  
+  // TOML 配置文件（pyproject.toml）
+  "[toml]": {
+    "editor.defaultFormatter": "tamasfe.even-better-toml"
+  },
+  
+  // 环境变量文件支持
+  "[dotenv]": {
+    "editor.defaultFormatter": "dotenv.dotenv-vscode"
+  },
+  
+  // ============================================
+  // AI 辅助配置（内网 AI 网关）
+  // ============================================
+  
+  // 如果使用 Copilot，配置内网代理
+  // "github.copilot.advanced": {
+  //   "debug.overrideProxy": "http://your-ai-gateway:8080"
+  // },
+  
+  // 或使用自定义 AI 扩展（如 CodeGeeX、Tongyi Lingma 等）
+  // 根据 AI 扩展文档配置内网网关地址
+  
+  // ============================================
+  // 通用开发配置
+  // ============================================
+  
+  // 编辑器配置
+  "editor.fontSize": 14,
+  "editor.tabSize": 4,
+  "editor.insertSpaces": true,
+  "editor.detectIndentation": true,
+  
+  // 自动补全
+  "editor.quickSuggestions": {
+    "other": true,
+    "comments": false,
+    "strings": true
+  },
+  
+  // 参数提示
+  "editor.parameterHints.enabled": true,
+  
+  // 代码折叠
+  "editor.folding": true,
+  "editor.foldingStrategy": "indentation",
+  
+  // 小地图
+  "editor.minimap.enabled": true,
+  "editor.minimap.maxColumn": 120,
+  
+  // 行号
+  "editor.lineNumbers": "on",
+  "editor.rulers": [88, 120],
+  
+  // Git 配置
+  "git.autofetch": false,  // 离线环境禁用自动 fetch
+  "git.autoRepositoryDetection": true,
+  "git.enableSmartCommit": true,
+  
+  // 终端配置
+  "terminal.integrated.fontSize": 13,
+  "terminal.integrated.scrollback": 10000,
+  
+  // 工作台配置
+  "workbench.colorTheme": "Default Dark+",
+  "workbench.iconTheme": "vs-seti",
+  "workbench.editor.enablePreview": false,
+  
+  // 性能优化（离线环境）
+  "extensions.autoUpdate": false,
+  "extensions.autoCheckUpdates": false,
+  "update.mode": "none",
+  
+  // 搜索优化（排除虚拟环境）
+  "search.exclude": {
+    "**/__pycache__": true,
+    "**/.venv": true,
+    "**/node_modules": true,
+    "**/.git": true
+  }
+}

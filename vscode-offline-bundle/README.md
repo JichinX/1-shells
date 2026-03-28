@@ -2,6 +2,42 @@
 
 在有网络的机器上运行，下载 VSCode 远程开发所需的全部离线资源，传输到内网服务器后一键部署。
 
+## 🚀 快速开始
+
+### 场景：离线 + Python + FastAPI + 内网 AI 网关
+
+#### 1️⃣ 自动配置（推荐）
+
+```bash
+# 运行快速配置脚本
+chmod +x setup-vscode.sh
+./setup-vscode.sh
+
+# 选择 "3. 全部配置"
+```
+
+#### 2️⃣ 手动配置
+
+**客户端配置（必需）**：
+```json
+// Windows: %APPDATA%\Code\User\settings.json
+// macOS/Linux: ~/.config/Code/User/settings.json
+{
+  "remote.SSH.localServerDownload": "always",
+  "remote.SSH.useExecServer": true,
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter",
+    "editor.formatOnSave": true
+  }
+}
+```
+
+**完整配置**：
+- 📄 `recommended-settings.json` - 完整配置文件
+- 📦 `recommended-extensions.md` - 扩展推荐列表
+- 🔧 `setup-vscode.sh` - 快速配置脚本
+
 ## 功能
 
 - 自动检测本地 VSCode 版本，或手动指定版本 / Commit ID
