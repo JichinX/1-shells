@@ -6,6 +6,11 @@
 
 ### 场景：离线 + Python + FastAPI + 内网 AI 网关
 
+> **⚠️ 重要**：VSCode 配置分为**客户端**和**服务端**两部分
+> - **客户端配置**：本地电脑，控制远程连接和外观
+> - **服务端配置**：远程服务器，控制 Python 环境和代码风格
+> - 详细说明见：[CONFIG-GUIDE.md](./CONFIG-GUIDE.md)
+
 #### 1️⃣ 自动配置（推荐）
 
 ```bash
@@ -13,30 +18,54 @@
 chmod +x setup-vscode.sh
 ./setup-vscode.sh
 
-# 选择 "3. 全部配置"
+# 选择 "3. 全部配置（客户端 + 服务端）"
 ```
 
 #### 2️⃣ 手动配置
 
-**客户端配置（必需）**：
+**客户端配置（本地电脑）**：
+```bash
+# 复制客户端配置
+cp client-settings.json ~/.config/Code/User/settings.json
+
+# 或 Windows
+copy client-settings.json %APPDATA%\Code\User\settings.json
+```
+
+**服务端配置（远程服务器，工作区级）**：
+```bash
+# 在项目根目录
+mkdir -p .vscode
+cp server-settings.json .vscode/settings.json
+```
+
+**最小配置（必需）**：
+
+客户端：
 ```json
-// Windows: %APPDATA%\Code\User\settings.json
-// macOS/Linux: ~/.config/Code/User/settings.json
 {
   "remote.SSH.localServerDownload": "always",
-  "remote.SSH.useExecServer": true,
+  "remote.SSH.useExecServer": true
+}
+```
+
+服务端：
+```json
+{
   "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
   "[python]": {
-    "editor.defaultFormatter": "ms-python.black-formatter",
     "editor.formatOnSave": true
   }
 }
 ```
 
-**完整配置**：
-- 📄 `recommended-settings.json` - 完整配置文件
-- 📦 `recommended-extensions.md` - 扩展推荐列表
-- 🔧 `setup-vscode.sh` - 快速配置脚本
+#### 配置文件说明
+
+| 文件 | 位置 | 作用 |
+|------|------|------|
+| `client-settings.json` | 客户端 | 远程连接、外观设置 |
+| `server-settings.json` | 服务端 | Python 环境、代码格式化 |
+| `CONFIG-GUIDE.md` | 文档 | 配置分离详细说明 |
 
 ## 功能
 

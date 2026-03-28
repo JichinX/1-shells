@@ -1,0 +1,56 @@
+{
+  // ==============================================================================
+  // VSCode 客户端配置（本地）
+  // 位置：~/.config/Code/User/settings.json (Linux/macOS)
+  //       %APPDATA%\Code\User\settings.json (Windows)
+  // ==============================================================================
+  
+  // ============================================
+  // 远程开发配置（离线环境关键配置）
+  // ============================================
+  
+  // 【关键】阻止远程服务器自动 wget，使用本地部署的离线包
+  "remote.SSH.localServerDownload": "always",
+  
+  // 启用持久化进程模式，支持 SSH 断线重连
+  "remote.SSH.useExecServer": true,
+  
+  // 远程连接超时设置（单位：秒）
+  "remote.SSH.connectTimeout": 60,
+  
+  // 显示登录终端，方便调试连接问题
+  "remote.SSH.showLoginTerminal": true,
+  
+  // 启用远程文件系统监听
+  "remote.SSH.useLocalServer": true,
+  
+  // ============================================
+  // 客户端通用配置
+  // ============================================
+  
+  // 编辑器配置
+  "editor.fontSize": 14,
+  "editor.tabSize": 4,
+  "editor.insertSpaces": true,
+  
+  // 小地图
+  "editor.minimap.enabled": true,
+  "editor.minimap.maxColumn": 120,
+  
+  // Git 配置
+  "git.autofetch": false,  // 离线环境禁用自动 fetch
+  "git.enableSmartCommit": true,
+  
+  // 工作台配置
+  "workbench.colorTheme": "Default Dark+",
+  "workbench.iconTheme": "vs-seti",
+  
+  // 性能优化（离线环境）
+  "extensions.autoUpdate": false,
+  "extensions.autoCheckUpdates": false,
+  "update.mode": "none",
+  
+  // 终端配置
+  "terminal.integrated.fontSize": 13,
+  "terminal.integrated.scrollback": 10000
+}

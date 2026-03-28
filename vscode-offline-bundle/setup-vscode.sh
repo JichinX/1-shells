@@ -195,29 +195,36 @@ EOF
 show_menu() {
     echo ""
     echo -e "${CYAN}请选择操作：${NC}"
-    echo "  1. 配置全局 VSCode 设置"
-    echo "  2. 为当前目录创建工作区配置"
-    echo "  3. 全部配置（推荐）"
+    echo "  1. 配置客户端全局设置（本地）"
+    echo "  2. 创建服务端工作区配置（远程）"
+    echo "  3. 全部配置（客户端 + 服务端）"
     echo "  4. 查看推荐扩展列表"
+    echo "  5. 查看配置分离说明"
     echo "  0. 退出"
     echo ""
-    read -p "输入选项 [0-4]: " choice
+    read -p "输入选项 [0-5]: " choice
     
     case $choice in
         1)
             backup_settings
             merge_settings
-            echo -e "${GREEN}✅ 全局配置完成！${NC}"
+            echo -e "${GREEN}✅ 客户端配置完成！${NC}"
+            echo -e "${YELLOW}配置位置: $SETTINGS_FILE${NC}"
             ;;
         2)
             create_workspace_config "$(pwd)"
-            echo -e "${GREEN}✅ 工作区配置完成！${NC}"
+            echo -e "${GREEN}✅ 服务端工作区配置完成！${NC}"
+            echo -e "${YELLOW}配置位置: $(pwd)/.vscode/settings.json${NC}"
             ;;
         3)
             backup_settings
             merge_settings
             create_workspace_config "$(pwd)"
             echo -e "${GREEN}✅ 全部配置完成！${NC}"
+            echo ""
+            echo -e "${CYAN}客户端配置：${NC}$SETTINGS_FILE"
+            echo -e "${CYAN}服务端配置：${NC}$(pwd)/.vscode/settings.json"
+            echo ""
             echo -e "${YELLOW}请重启 VSCode 生效${NC}"
             ;;
         4)
@@ -231,6 +238,14 @@ show_menu() {
             echo "  • tamasfe.even-better-toml"
             echo ""
             echo -e "${YELLOW}查看完整列表: recommended-extensions.md${NC}"
+            ;;
+        5)
+            echo ""
+            echo -e "${CYAN}配置分离说明：${NC}"
+            echo "  • 客户端配置：远程连接、外观、全局性能"
+            echo "  • 服务端配置：Python 环境、代码风格、项目配置"
+            echo ""
+            echo -e "${YELLOW}详细说明: CONFIG-GUIDE.md${NC}"
             ;;
         0)
             echo -e "${GREEN}再见！${NC}"

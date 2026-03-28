@@ -1,0 +1,109 @@
+{
+  // ==============================================================================
+  // VSCode 服务端配置（远程服务器）
+  // 位置：项目根目录/.vscode/settings.json（推荐）
+  //       或 ~/.vscode-server/data/Machine/settings.json
+  // ==============================================================================
+  
+  // ============================================
+  // Python 开发配置
+  // ============================================
+  
+  // Python 解释器路径（在远程服务器上）
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+  
+  // 语言服务器：Pylance（功能最强）或 Jedi（轻量级）
+  "python.languageServer": "Pylance",
+  
+  // 类型检查级别
+  "python.analysis.typeCheckingMode": "basic",
+  
+  // 自动导入补全
+  "python.analysis.completeFunctionParens": true,
+  "python.analysis.autoImportCompletions": true,
+  
+  // 代码格式化
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    }
+  },
+  
+  // Linting 配置
+  "python.linting.enabled": true,
+  "python.linting.pylintEnabled": false,
+  "python.linting.flake8Enabled": true,
+  "python.linting.flake8Args": [
+    "--max-line-length=120",
+    "--ignore=E501,W503"
+  ],
+  
+  // 测试配置
+  "python.testing.pytestEnabled": true,
+  "python.testing.unittestEnabled": false,
+  
+  // 自动激活虚拟环境
+  "python.terminal.activateEnvironment": true,
+  
+  // ============================================
+  // FastAPI + SQLAlchemy 配置
+  // ============================================
+  
+  // 自动保存策略（FastAPI 热重载需要）
+  "files.autoSave": "afterDelay",
+  "files.autoSaveDelay": 1000,
+  
+  // 文件监听（用于热重载）
+  "files.watcherExclude": {
+    "**/__pycache__/**": true,
+    "**/node_modules/**": true,
+    "**/.venv/**": true
+  },
+  
+  // 数据库文件关联（SQLite）
+  "files.associations": {
+    "*.db": "sqlite",
+    "*.sqlite": "sqlite",
+    "*.sqlite3": "sqlite"
+  },
+  
+  // 文件排除
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/*.pyc": true,
+    "**/.pytest_cache": true,
+    "**/.mypy_cache": true
+  },
+  
+  // ============================================
+  // 编辑器配置
+  // ============================================
+  
+  // 自动补全
+  "editor.quickSuggestions": {
+    "other": true,
+    "comments": false,
+    "strings": true
+  },
+  
+  // 参数提示
+  "editor.parameterHints.enabled": true,
+  
+  // 代码折叠
+  "editor.folding": true,
+  "editor.foldingStrategy": "indentation",
+  
+  // 行号和标尺
+  "editor.lineNumbers": "on",
+  "editor.rulers": [88, 120],
+  
+  // 搜索优化（排除虚拟环境）
+  "search.exclude": {
+    "**/__pycache__": true,
+    "**/.venv": true,
+    "**/node_modules": true,
+    "**/.git": true
+  }
+}
