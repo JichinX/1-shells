@@ -1,0 +1,26 @@
+# 测试输出目录
+jetbrains-offline-bundle/
+
+# 下载的文件
+*.tar.gz
+*.zip
+
+# 日志文件
+*.log
+
+# 临时文件
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# 调试文件
+debug/
+test/
+tmp/
