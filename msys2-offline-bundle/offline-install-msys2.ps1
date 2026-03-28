@@ -102,12 +102,17 @@ if (-not (Test-Path $packagesPath)) {
         # 使用 pacman 从本地缓存安装
         Write-Host "    -> 安装软件包（这可能需要几分钟）..." -ForegroundColor Gray
         
+        $installCmd = @'
+pacman -U --noconfirm /var/cache/pacman/pkg/*.pkg.tar.zst
+'@
+        
         try {
-            # 分两步执行：先更新数据库，再安装软件包
+            # 第一步：更新系统（PowerShell 5.1 不支持 &&，分两步执行）
             Start-Process -FilePath "$InstallPath\msys2_shell.cmd" `
                 -ArgumentList "-ucrt64", "-defterm", "-no-start", "-c", "pacman -Sy --noconfirm" `
                 -Wait -NoNewWindow
             
+            # 第二步：安装本地软件包
             Start-Process -FilePath "$InstallPath\msys2_shell.cmd" `
                 -ArgumentList "-ucrt64", "-defterm", "-no-start", "-c", "pacman -U --noconfirm /var/cache/pacman/pkg/*.pkg.tar.zst" `
                 -Wait -NoNewWindow
