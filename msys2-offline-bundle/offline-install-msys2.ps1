@@ -102,13 +102,14 @@ if (-not (Test-Path $packagesPath)) {
         # 使用 pacman 从本地缓存安装
         Write-Host "    -> 安装软件包（这可能需要几分钟）..." -ForegroundColor Gray
         
-        $installCmd = @'
-pacman -U --noconfirm /var/cache/pacman/pkg/*.pkg.tar.zst
-'@
-        
         try {
+            # 分两步执行：先更新数据库，再安装软件包
             Start-Process -FilePath "$InstallPath\msys2_shell.cmd" `
-                -ArgumentList "-ucrt64", "-defterm", "-no-start", "-c", "pacman -Sy --noconfirm && pacman -U --noconfirm /var/cache/pacman/pkg/*.pkg.tar.zst" `
+                -ArgumentList "-ucrt64", "-defterm", "-no-start", "-c", "pacman -Sy --noconfirm" `
+                -Wait -NoNewWindow
+            
+            Start-Process -FilePath "$InstallPath\msys2_shell.cmd" `
+                -ArgumentList "-ucrt64", "-defterm", "-no-start", "-c", "pacman -U --noconfirm /var/cache/pacman/pkg/*.pkg.tar.zst" `
                 -Wait -NoNewWindow
             
             Write-Host "    -> 软件包安装完成" -ForegroundColor Gray
