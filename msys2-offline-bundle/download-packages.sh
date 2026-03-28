@@ -32,7 +32,7 @@ parse_config() {
     
     # 默认值
     PACKAGES=(
-        zsh git curl wget vim nano tar unzip man-db
+        zsh git curl wget vim nano tar zip unzip man-db
         bat fd ripgrep fzf zoxide
         libpcre libpcre2 ncurses readline gdbm
     )
