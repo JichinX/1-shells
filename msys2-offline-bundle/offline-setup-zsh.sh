@@ -40,17 +40,38 @@ echo ""
 # ============================================
 echo -e "${GREEN}[1/5] 安装 Oh My Zsh...${NC}"
 
-OHMYZSH_SRC="$TOOLS_DIR/oh-my-zsh"
 OHMYZSH_DEST="$HOME/.oh-my-zsh"
 
 if [[ -d "$OHMYZSH_DEST" ]]; then
     echo -e "${YELLOW}    -> Oh My Zsh 已安装，跳过${NC}"
 else
-    if [[ -d "$OHMYZSH_SRC" ]]; then
-        cp -r "$OHMYZSH_SRC" "$OHMYZSH_DEST"
+    # 尝试从 zip 文件安装
+    OHMYZSH_ZIP="$TOOLS_DIR/oh-my-zsh.zip"
+    OHMYZSH_DIR="$TOOLS_DIR/oh-my-zsh"
+    
+    if [[ -f "$OHMYZSH_ZIP" ]]; then
+        echo -e "${GREEN}    -> 从 zip 文件安装${NC}"
+        # 解压到临时目录
+        TEMP_DIR=$(mktemp -d)
+        unzip -q "$OHMYZSH_ZIP" -d "$TEMP_DIR"
+        
+        # 找到解压后的目录（通常是 ohmyzsh-master）
+        EXTRACTED_DIR=$(find "$TEMP_DIR" -maxdepth 1 -type d -name "ohmyzsh*" | head -1)
+        
+        if [[ -d "$EXTRACTED_DIR" ]]; then
+            mv "$EXTRACTED_DIR" "$OHMYZSH_DEST"
+            echo -e "${GREEN}    -> Oh My Zsh 安装完成${NC}"
+        else
+            echo -e "${RED}    -> zip 文件结构不正确${NC}"
+        fi
+        
+        rm -rf "$TEMP_DIR"
+    elif [[ -d "$OHMYZSH_DIR" ]]; then
+        cp -r "$OHMYZSH_DIR" "$OHMYZSH_DEST"
         echo -e "${GREEN}    -> Oh My Zsh 安装完成${NC}"
     else
-        echo -e "${RED}    -> 找不到 Oh My Zsh 源文件: $OHMYZSH_SRC${NC}"
+        echo -e "${RED}    -> 找不到 Oh My Zsh 源文件${NC}"
+        echo -e "${YELLOW}    -> 请确保 oh-my-zsh.zip 或 oh-my-zsh 目录存在${NC}"
         exit 1
     fi
 fi
@@ -66,12 +87,26 @@ ZSH_CUSTOM="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}"
 if [[ -d "$ZSH_CUSTOM/plugins/zsh-autosuggestions" ]]; then
     echo -e "${YELLOW}    -> zsh-autosuggestions 已安装${NC}"
 else
-    AUTOSUGGEST_SRC="$TOOLS_DIR/zsh-autosuggestions"
-    if [[ -d "$AUTOSUGGEST_SRC" ]]; then
-        cp -r "$AUTOSUGGEST_SRC" "$ZSH_CUSTOM/plugins/zsh-autosuggestions"
+    AUTOSUGGEST_ZIP="$TOOLS_DIR/zsh-autosuggestions.zip"
+    AUTOSUGGEST_DIR="$TOOLS_DIR/zsh-autosuggestions"
+    
+    if [[ -f "$AUTOSUGGEST_ZIP" ]]; then
+        echo -e "${GREEN}    -> 从 zip 安装 zsh-autosuggestions${NC}"
+        TEMP_DIR=$(mktemp -d)
+        unzip -q "$AUTOSUGGEST_ZIP" -d "$TEMP_DIR"
+        EXTRACTED_DIR=$(find "$TEMP_DIR" -maxdepth 1 -type d -name "zsh-autosuggestions*" | head -1)
+        
+        if [[ -d "$EXTRACTED_DIR" ]]; then
+            mv "$EXTRACTED_DIR" "$ZSH_CUSTOM/plugins/zsh-autosuggestions"
+            echo -e "${GREEN}    -> zsh-autosuggestions 安装完成${NC}"
+        fi
+        
+        rm -rf "$TEMP_DIR"
+    elif [[ -d "$AUTOSUGGEST_DIR" ]]; then
+        cp -r "$AUTOSUGGEST_DIR" "$ZSH_CUSTOM/plugins/zsh-autosuggestions"
         echo -e "${GREEN}    -> zsh-autosuggestions 安装完成${NC}"
     else
-        echo -e "${RED}    -> 找不到 zsh-autosuggestions: $AUTOSUGGEST_SRC${NC}"
+        echo -e "${RED}    -> 找不到 zsh-autosuggestions${NC}"
     fi
 fi
 
@@ -79,12 +114,26 @@ fi
 if [[ -d "$ZSH_CUSTOM/plugins/zsh-syntax-highlighting" ]]; then
     echo -e "${YELLOW}    -> zsh-syntax-highlighting 已安装${NC}"
 else
-    SYNTAX_HIGHLIGHT_SRC="$TOOLS_DIR/zsh-syntax-highlighting"
-    if [[ -d "$SYNTAX_HIGHLIGHT_SRC" ]]; then
-        cp -r "$SYNTAX_HIGHLIGHT_SRC" "$ZSH_CUSTOM/plugins/zsh-syntax-highlighting"
+    SYNTAX_ZIP="$TOOLS_DIR/zsh-syntax-highlighting.zip"
+    SYNTAX_DIR="$TOOLS_DIR/zsh-syntax-highlighting"
+    
+    if [[ -f "$SYNTAX_ZIP" ]]; then
+        echo -e "${GREEN}    -> 从 zip 安装 zsh-syntax-highlighting${NC}"
+        TEMP_DIR=$(mktemp -d)
+        unzip -q "$SYNTAX_ZIP" -d "$TEMP_DIR"
+        EXTRACTED_DIR=$(find "$TEMP_DIR" -maxdepth 1 -type d -name "zsh-syntax-highlighting*" | head -1)
+        
+        if [[ -d "$EXTRACTED_DIR" ]]; then
+            mv "$EXTRACTED_DIR" "$ZSH_CUSTOM/plugins/zsh-syntax-highlighting"
+            echo -e "${GREEN}    -> zsh-syntax-highlighting 安装完成${NC}"
+        fi
+        
+        rm -rf "$TEMP_DIR"
+    elif [[ -d "$SYNTAX_DIR" ]]; then
+        cp -r "$SYNTAX_DIR" "$ZSH_CUSTOM/plugins/zsh-syntax-highlighting"
         echo -e "${GREEN}    -> zsh-syntax-highlighting 安装完成${NC}"
     else
-        echo -e "${RED}    -> 找不到 zsh-syntax-highlighting: $SYNTAX_HIGHLIGHT_SRC${NC}"
+        echo -e "${RED}    -> 找不到 zsh-syntax-highlighting${NC}"
     fi
 fi
 
@@ -93,19 +142,32 @@ fi
 # ============================================
 echo -e "${GREEN}[3/5] 安装 Starship...${NC}"
 
-STARSHIP_SRC="$TOOLS_DIR/starship.exe"
 STARSHIP_DEST="/usr/bin/starship.exe"
 
 if [[ -f "$STARSHIP_DEST" ]]; then
     echo -e "${YELLOW}    -> Starship 已安装${NC}"
 else
-    if [[ -f "$STARSHIP_SRC" ]]; then
-        cp "$STARSHIP_SRC" "$STARSHIP_DEST"
+    STARSHIP_EXE="$TOOLS_DIR/starship.exe"
+    STARSHIP_ZIP="$TOOLS_DIR/starship.zip"
+    
+    if [[ -f "$STARSHIP_EXE" ]]; then
+        cp "$STARSHIP_EXE" "$STARSHIP_DEST"
         chmod +x "$STARSHIP_DEST"
         echo -e "${GREEN}    -> Starship 安装完成${NC}"
+    elif [[ -f "$STARSHIP_ZIP" ]]; then
+        echo -e "${GREEN}    -> 从 zip 安装 Starship${NC}"
+        TEMP_DIR=$(mktemp -d)
+        unzip -q "$STARSHIP_ZIP" -d "$TEMP_DIR"
+        
+        if [[ -f "$TEMP_DIR/starship.exe" ]]; then
+            mv "$TEMP_DIR/starship.exe" "$STARSHIP_DEST"
+            chmod +x "$STARSHIP_DEST"
+            echo -e "${GREEN}    -> Starship 安装完成${NC}"
+        fi
+        
+        rm -rf "$TEMP_DIR"
     else
-        echo -e "${RED}    -> 找不到 Starship: $STARSHIP_SRC${NC}"
-        echo -e "${YELLOW}    -> 将使用基础 prompt${NC}"
+        echo -e "${YELLOW}    -> 找不到 Starship，将使用基础 prompt${NC}"
     fi
 fi
 

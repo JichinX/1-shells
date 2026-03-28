@@ -107,14 +107,8 @@ pacman -U --noconfirm /var/cache/pacman/pkg/*.pkg.tar.zst
 '@
         
         try {
-            # 第一步：更新系统（PowerShell 5.1 不支持 &&，分两步执行）
             Start-Process -FilePath "$InstallPath\msys2_shell.cmd" `
-                -ArgumentList "-ucrt64", "-defterm", "-no-start", "-c", "pacman -Sy --noconfirm" `
-                -Wait -NoNewWindow
-            
-            # 第二步：安装本地软件包
-            Start-Process -FilePath "$InstallPath\msys2_shell.cmd" `
-                -ArgumentList "-ucrt64", "-defterm", "-no-start", "-c", "pacman -U --noconfirm /var/cache/pacman/pkg/*.pkg.tar.zst" `
+                -ArgumentList "-ucrt64", "-defterm", "-no-start", "-c", "pacman -Sy --noconfirm && pacman -U --noconfirm /var/cache/pacman/pkg/*.pkg.tar.zst" `
                 -Wait -NoNewWindow
             
             Write-Host "    -> 软件包安装完成" -ForegroundColor Gray
