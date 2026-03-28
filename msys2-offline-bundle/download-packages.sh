@@ -1,9 +1,17 @@
 #!/bin/bash
-# 在有外网的 MSYS2 UCRT64 环境中运行
-# 下载所有需要的软件包到缓存目录（不安装）
+# MSYS2 软件包离线下载脚本（辅助工具）
+#
+# 【用途】在已有 MSYS2 的环境中单独下载软件包
+# 【适用场景】补充下载缺失的包、更新包列表
+#
+# 注意：这是辅助脚本，通常不需要使用
+# 完整的离线方案请使用 download-resources.ps1
+#
 # 使用方法:
 #   bash download-packages.sh
 #   bash download-packages.sh /path/to/config.conf
+#
+# 详细工作流程请参考: WORKFLOW.md
 
 set -e
 

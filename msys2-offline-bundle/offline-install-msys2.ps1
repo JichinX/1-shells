@@ -1,6 +1,15 @@
 # 离线环境 MSYS2 安装脚本
-# 在离线环境中运行，从本地资源安装 MSYS2
+#
+# 【流程位置】离线路线 - 步骤 2/3（在离线环境运行）
+# 【前置步骤】download-resources.ps1（在有外网的环境运行）
+# 【下一步骤】offline-setup-zsh.sh（在 MSYS2 中运行）
+#
+# 功能：从本地资源安装 MSYS2 和软件包
+# 产出：C:\msys64\ (MSYS2 环境 + 工具 + 脚本)
+#
 # 使用方法: .\offline-install-msys2.ps1 -ResourcesPath ".\offline-resources"
+#
+# 详细工作流程请参考: WORKFLOW.md
 
 param(
     [string]$ResourcesPath = ".\offline-resources",

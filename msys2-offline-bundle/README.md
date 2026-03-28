@@ -2,6 +2,39 @@
 
 适用于无法使用 WSL 的 Windows 环境（如虚拟机），支持**完全离线安装**，提供接近原生 Linux 的 shell 体验。
 
+## 🚀 快速开始
+
+### 离线路线（推荐）
+
+**三步完成离线安装**：
+
+```
+┌─────────────────────────────────────────────┐
+│ 1️⃣ 外网环境 → 下载资源                       │
+│    .\download-resources.ps1                 │
+└─────────────────────────────────────────────┘
+                    ↓ 拷贝到离线环境
+┌─────────────────────────────────────────────┐
+│ 2️⃣ 离线环境 → 安装 MSYS2                    │
+│    .\offline-install-msys2.ps1              │
+└─────────────────────────────────────────────┘
+                    ↓
+┌─────────────────────────────────────────────┐
+│ 3️⃣ MSYS2 → 配置 Zsh                        │
+│    bash ~/scripts/offline-setup-zsh.sh      │
+└─────────────────────────────────────────────┘
+```
+
+**📖 详细步骤请参考**: [WORKFLOW.md](./WORKFLOW.md)
+
+### 在线路线（备用）
+
+如果有稳定的网络连接：
+1. `.\install-msys2.ps1` - 在线安装 MSYS2
+2. `bash setup-shell.sh` - 在线配置 Zsh
+
+---
+
 ## 📦 包含内容
 
 ### 1. `download-resources.ps1` - 外网下载脚本
@@ -28,27 +61,39 @@
 
 ## 🆕 最新更新
 
-### 2026-03-28 更新内容
+### 2026-03-28 重要更新
+
+✅ **工作流程文档**
+- 新增 [WORKFLOW.md](./WORKFLOW.md) 详细说明脚本使用流程
+- 所有脚本头部添加流程位置说明
+- 明确区分离线路线和在线路线
 
 ✅ **配置文件支持**
-- 新增 `config.conf` 配置文件
+
+✅ **配置文件支持（完整）**
+- 所有脚本支持从 `config.conf` 读取配置
 - 支持自定义镜像源（MSYS2 和 GitHub）
 - 支持自定义软件包列表
 - 配置优先级：命令行参数 > 配置文件 > 默认值
 
-✅ **PowerShell 5.1 兼容性修复**
+✅ **PowerShell 5.1 兼容性**
 - 修复 `&&` 语法错误（PowerShell 5.1 不支持）
 - 改用独立的 `Start-Process` 调用
+- 修复 pacman 命令环境加载问题
 - 完全兼容 Windows 10 默认 PowerShell 版本
 
 ✅ **插件安装增强**
-- `offline-setup-zsh.sh` 支持从 zip 文件安装
-- 同时支持目录和 zip 文件两种格式
+- 支持从 zip 文件安装 Oh My Zsh 和插件
+- 支持配置动态下载任意 Zsh 插件
 - 改进错误提示和安装日志
 
-✅ **新增下载脚本**
+✅ **新增辅助脚本**
 - `download-packages.sh` - 在 MSYS2 环境中下载软件包
 - 支持导出到 `~/offline-packages` 目录
+
+✅ **故障排查文档**
+- README 添加详细的 zsh 故障排查步骤
+- 包含诊断和 3 种解决方法
 
 ### 使用建议
 
@@ -407,16 +452,28 @@ pacman -U /path/to/package.pkg.tar.zst
 
 ### 配置文件
 - `config.conf` - 下载配置文件（镜像源、软件包列表等）
+- `WORKFLOW.md` - **工作流程文档（推荐先阅读）**
 
-### 离线脚本（推荐）
-- `download-resources.ps1` - 外网下载资源（支持配置文件）
-- `offline-install-msys2.ps1` - 离线安装 MSYS2
-- `offline-setup-zsh.sh` - 离线配置 Zsh（支持 zip 文件安装）
-- `download-packages.sh` - 在 MSYS2 环境中下载软件包
+### 离线路线（推荐）
 
-### 在线脚本（已弃用，仅作参考）
-- ~~`install-msys2.ps1`~~ - 在线安装脚本
-- ~~`setup-shell.sh`~~ - 在线配置脚本
+| 脚本 | 运行环境 | 流程位置 |
+|------|---------|---------|
+| `download-resources.ps1` | Windows (有外网) | 步骤 1/3 |
+| `offline-install-msys2.ps1` | Windows (离线) | 步骤 2/3 |
+| `offline-setup-zsh.sh` | MSYS2 UCRT64 | 步骤 3/3 |
+
+### 在线路线（备用）
+
+| 脚本 | 运行环境 | 流程位置 |
+|------|---------|---------|
+| `install-msys2.ps1` | Windows (有外网) | 步骤 1/2 |
+| `setup-shell.sh` | MSYS2 UCRT64 | 步骤 2/2 |
+
+### 辅助工具
+
+| 脚本 | 运行环境 | 用途 |
+|------|---------|------|
+| `download-packages.sh` | MSYS2 UCRT64 (有外网) | 单独下载软件包（通常不需要） |
 
 ## 🔄 卸载
 

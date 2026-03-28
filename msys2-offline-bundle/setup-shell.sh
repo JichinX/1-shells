@@ -1,7 +1,18 @@
 #!/bin/bash
-# MSYS2 Shell 环境一键配置脚本
+# MSYS2 Shell 环境一键配置脚本（在线版本 - 备用）
+#
+# 【流程位置】在线路线 - 步骤 2/2（在 MSYS2 UCRT64 中运行）
+# 【前置步骤】install-msys2.ps1（在有外网的环境运行）
+#
+# ⚠️ 这是备用方案，推荐使用离线路线（见 WORKFLOW.md）
+#
+# 功能：在线安装 Zsh、Oh My Zsh、Starship 等（需要网络连接）
+# 产出：现代化的 Shell 环境
+#
 # 在 MSYS2 UCRT64 终端中运行: bash setup-shell.sh
 # 或直接: curl -fsSL https://your-url/setup-shell.sh | bash
+#
+# 详细工作流程请参考: WORKFLOW.md
 
 set -e
 

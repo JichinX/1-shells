@@ -1,9 +1,17 @@
 # 离线资源下载脚本（改进版）
-# 在有外网的环境运行，自动安装 MSYS2 并下载所有离线资源
+#
+# 【流程位置】离线路线 - 步骤 1/3（在有外网的环境运行）
+# 【下一步骤】offline-install-msys2.ps1（在离线环境运行）
+#
+# 功能：自动安装临时 MSYS2 并下载所有离线资源
+# 产出：offline-resources/ 目录（包含安装包、软件包、工具、脚本）
+#
 # 使用方法:
 #   .\download-resources.ps1
 #   .\download-resources.ps1 -OutputPath ".\offline-resources"
 #   .\download-resources.ps1 -ConfigFile ".\config.conf"
+#
+# 详细工作流程请参考: WORKFLOW.md
 
 param(
     [string]$OutputPath,

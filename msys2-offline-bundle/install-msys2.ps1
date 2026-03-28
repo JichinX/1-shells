@@ -1,6 +1,17 @@
-# MSYS2 一键安装脚本
+# MSYS2 一键安装脚本（在线版本 - 备用）
+#
+# 【流程位置】在线路线 - 步骤 1/2（在有外网的环境运行）
+# 【下一步骤】setup-shell.sh（在 MSYS2 中运行）
+#
+# ⚠️ 这是备用方案，推荐使用离线路线（见 WORKFLOW.md）
+#
+# 功能：在线安装 MSYS2（需要稳定的网络连接）
+# 产出：C:\msys64\ (基础 MSYS2 环境)
+#
 # 以管理员身份运行 PowerShell 执行此脚本
 # 使用方法: .\install-msys2.ps1
+#
+# 详细工作流程请参考: WORKFLOW.md
 
 param(
     [string]$InstallPath = "C:\msys64"

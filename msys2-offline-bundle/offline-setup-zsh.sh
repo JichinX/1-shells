@@ -1,7 +1,15 @@
 #!/bin/bash
 # 离线环境 ZSH 配置脚本
+#
+# 【流程位置】离线路线 - 步骤 3/3（在 MSYS2 UCRT64 中运行）
+# 【前置步骤】offline-install-msys2.ps1（在离线环境运行）
+#
+# 功能：配置完整的 Zsh 开发环境（Oh My Zsh + 插件 + Starship）
+# 产出：现代化的 Shell 环境（无需网络连接）
+#
 # 在 MSYS2 UCRT64 终端中运行: bash ~/scripts/offline-setup-zsh.sh
-# 此脚本不需要网络连接
+#
+# 详细工作流程请参考: WORKFLOW.md
 
 set -e
 
