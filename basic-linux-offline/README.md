@@ -41,11 +41,11 @@ scp linux-offline-dev-tools.tar.gz user@offline-server:/tmp/
 cd /tmp
 tar -xzf linux-offline-dev-tools.tar.gz
 
-# 2. 给脚本执行权限
-chmod +x install.sh
+# 2. 进入目录
+cd offline-packages
 
 # 3. 运行安装脚本
-./install.sh
+bash install.sh
 
 # 4. 重新加载配置
 source ~/.bashrc  # 或 source ~/.zshrc
@@ -108,46 +108,33 @@ download_fnm = true
 ./download.sh --config /path/to/custom.conf
 ```
 
-## 📋 使用步骤
+## 🎯 特性
 
-## 使用步骤
+### 智能下载
 
-### 第一步：在有网环境下载
+- ✅ 自动跳过已存在的文件
+- ✅ 只在有新文件时才重新打包
+- ✅ 下载统计和状态提示
+- ✅ 支持断点续传（手动重新运行即可）
 
-```bash
-# 1. 给脚本执行权限
-chmod +x download.sh
+### 完整打包
 
-# 2. 运行下载脚本
-./download.sh
-
-# 3. 等待下载完成
-# 会生成 offline-packages/ 目录和 linux-offline-dev-tools.tar.gz
+打包文件包含所有需要的文件：
+```
+linux-offline-dev-tools.tar.gz
+  └── offline-packages/
+      ├── install.sh          # 安装脚本
+      ├── README.md           # 使用文档
+      ├── QUICKSTART.md       # 快速开始
+      ├── versions.conf       # 配置文件
+      ├── versions.txt        # 版本信息
+      ├── pyenv-offline.tar.gz
+      ├── Python-*.tgz
+      ├── fnm-linux.zip
+      └── node-v*-linux-x64.tar.gz
 ```
 
-### 第二步：传输到离线环境
-
-```bash
-# 将打包文件传输到离线 Linux 服务器
-scp linux-offline-dev-tools.tar.gz user@offline-server:/tmp/
-```
-
-### 第三步：在离线环境安装
-
-```bash
-# 1. 解压
-cd /tmp
-tar -xzf linux-offline-dev-tools.tar.gz
-
-# 2. 给脚本执行权限
-chmod +x install.sh
-
-# 3. 运行安装脚本
-./install.sh
-
-# 4. 重新加载配置
-source ~/.bashrc  # 或 source ~/.zshrc
-```
+解压后即可使用，无需额外文件！
 
 ## 验证安装
 
@@ -187,26 +174,6 @@ fnm use 18
 
 # 设置默认版本
 fnm default 18
-```
-
-## 自定义版本
-
-### 修改下载版本
-
-编辑 `download.sh` 文件顶部的版本配置：
-
-```bash
-PYTHON_VERSIONS=("3.12.0" "3.11.8" "3.10.13")
-NODE_VERSIONS=("20.11.0" "18.19.0" "16.20.2")
-```
-
-### 修改安装版本
-
-编辑 `install.sh` 文件顶部的版本配置：
-
-```bash
-PYTHON_VERSION="3.12.0"
-NODE_VERSION="20.11.0"
 ```
 
 ## 系统要求
@@ -282,22 +249,57 @@ sudo yum install -y zlib-devel openssl-devel libffi-devel \
    eval "$(fnm env --shell bash)"
    ```
 
-## 文件说明
+### 下载失败
+
+**问题:** 下载文件失败，无错误信息
+
+**解决:**
+1. 检查网络连接
+2. 检查 URL 是否正确（查看 versions.conf 中的镜像源配置）
+3. 使用国内镜像加速：
+   ```ini
+   node_mirror = https://npmmirror.com/mirrors/node
+   ```
+4. 手动下载失败的文件，放到 `offline-packages/` 目录
+5. 重新运行脚本（会自动跳过已存在的文件）
+
+## 📝 文件说明
 
 ```
 .
 ├── download.sh          # 下载脚本（有网环境运行）
 ├── install.sh           # 安装脚本（离线环境运行）
+├── versions.conf        # 配置文件（版本、镜像源等）
 ├── README.md            # 本说明文档
+├── QUICKSTART.md        # 快速开始指南
 └── offline-packages/    # 下载的离线包目录
+    ├── install.sh       # 安装脚本（打包时自动复制）
+    ├── README.md        # 使用文档（打包时自动复制）
+    ├── QUICKSTART.md    # 快速开始（打包时自动复制）
+    ├── versions.conf    # 配置文件（打包时自动复制）
+    ├── versions.txt     # 版本信息
     ├── pyenv-offline.tar.gz
-    ├── Python-3.12.0.tgz
-    ├── Python-3.11.8.tgz
+    ├── Python-*.tgz
     ├── fnm-linux.zip
-    ├── node-v20.11.0-linux-x64.tar.gz
-    ├── node-v18.19.0-linux-x64.tar.gz
-    └── versions.txt
+    └── node-v*-linux-x64.tar.gz
 ```
+
+## 🔄 更新日志
+
+### 2026-04-04
+
+**新增功能**：
+- ✅ 支持配置文件（versions.conf）
+- ✅ 支持命令行参数指定配置文件
+- ✅ 智能跳过已存在的文件
+- ✅ 智能判断是否需要重新打包
+- ✅ 打包时包含安装脚本和文档
+
+**改进**：
+- ✅ 下载统计和状态提示
+- ✅ 支持国内镜像加速
+- ✅ 选择性下载（Python、Node.js、pyenv、fnm）
+- ✅ 解压后即可使用，无需额外文件
 
 ## 许可证
 
@@ -309,3 +311,4 @@ MIT License
 - [fnm 官方文档](https://github.com/Schniz/fnm)
 - [Python 官方下载](https://www.python.org/downloads/)
 - [Node.js 官方下载](https://nodejs.org/en/download/)
+- [npmmirror 镜像站](https://npmmirror.com/)
