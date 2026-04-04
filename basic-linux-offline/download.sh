@@ -269,8 +269,25 @@ if [ "$NEED_PACKAGE" = true ]; then
     cp "$SCRIPT_DIR/QUICKSTART.md" "$Config_DownloadDir/" 2>/dev/null || true
     cp "$CONFIG_FILE" "$Config_DownloadDir/" 2>/dev/null || true
     
-    # 打包（包含安装脚本和文档）
-    tar -czf "$Config_ArchiveFile" "$Config_DownloadDir"
+    # 清理 macOS 隐藏文件
+    echo "清理 macOS 系统文件..."
+    find "$Config_DownloadDir" -name '.DS_Store' -type f -delete 2>/dev/null || true
+    find "$Config_DownloadDir" -name '._*' -type f -delete 2>/dev/null || true
+    find "$Config_DownloadDir" -name '.Trashes' -type d -exec rm -rf {} + 2>/dev/null || true
+    find "$Config_DownloadDir" -name '.Spotlight-V100' -type d -exec rm -rf {} + 2>/dev/null || true
+    find "$Config_DownloadDir" -name '.fseventsd' -type d -exec rm -rf {} + 2>/dev/null || true
+    find "$Config_DownloadDir" -name '.TemporaryItems' -type d -exec rm -rf {} + 2>/dev/null || true
+    
+    # 打包（包含安装脚本和文档，排除 macOS 隐藏文件）
+    echo "打包文件..."
+    tar -czf "$Config_ArchiveFile" \
+        --exclude='.DS_Store' \
+        --exclude='._*' \
+        --exclude='.Trashes' \
+        --exclude='.Spotlight-V100' \
+        --exclude='.fseventsd' \
+        --exclude='.TemporaryItems' \
+        "$Config_DownloadDir"
     echo "✓ 打包完成"
     
     # 清理源文件
