@@ -1,0 +1,17 @@
+配置文件: /Users/jichinx/Projects/Code/claw-work/opensource/1-shells/ubuntu-offline-packages/packages.conf
+Ubuntu 版本: jammy
+架构: amd64
+镜像源: http://mirrors.aliyun.com/ubuntu
+下载时间: 2026-04-04 13:33:34
+成功下载: 8
+下载失败: 0
+
+软件包列表:
+curl
+git
+htop
+tree
+unzip
+vim
+wget
+zip

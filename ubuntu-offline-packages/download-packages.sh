@@ -1,7 +1,7 @@
 #!/bin/bash
 # Ubuntu/Debian 离线包下载脚本
-# 用途：在有网的 Ubuntu/Debian 系统上下载软件包及其依赖
-# 运行环境：Ubuntu/Debian 系统，需要 apt-get
+# 用途：在 macOS/Linux 上下载 Ubuntu 软件包
+# 运行环境：macOS 或 Linux，需要 wget 或 curl
 
 set -e
 
@@ -17,15 +17,10 @@ export COPYFILE_DISABLE=1
 # 默认配置
 Config_DownloadDir="ubuntu-packages"
 Config_ArchiveFile="ubuntu-offline-packages.tar.gz"
-Config_UbuntuCodename=""
-Config_BasicPackages=()
-Config_DevPackages=()
-Config_NetworkPackages=()
-Config_PythonPackages=()
-Config_NodejsPackages=()
-Config_DownloadDependencies=true
-Config_DownloadRecommends=false
-Config_DownloadSuggests=false
+Config_UbuntuVersion="jammy"
+Config_Architecture="amd64"
+Config_Mirror="http://mirrors.aliyun.com/ubuntu"
+Config_Packages=()
 Config_AutoPackage=true
 Config_CleanAfterPackage=false
 
@@ -63,37 +58,18 @@ parse_config() {
                 archive_file)
                     Config_ArchiveFile="$value"
                     ;;
-                ubuntu_codename)
-                    Config_UbuntuCodename="$value"
+                ubuntu_version)
+                    Config_UbuntuVersion="$value"
                     ;;
-                basic_packages)
-                    IFS=' ' read -ra Config_BasicPackages <<< "$value"
-                    echo "    -> 基础工具包: ${Config_BasicPackages[*]}"
+                architecture)
+                    Config_Architecture="$value"
                     ;;
-                dev_packages)
-                    IFS=' ' read -ra Config_DevPackages <<< "$value"
-                    echo "    -> 开发工具包: ${Config_DevPackages[*]}"
+                mirror)
+                    Config_Mirror="$value"
                     ;;
-                network_packages)
-                    IFS=' ' read -ra Config_NetworkPackages <<< "$value"
-                    echo "    -> 网络工具包: ${Config_NetworkPackages[*]}"
-                    ;;
-                python_packages)
-                    IFS=' ' read -ra Config_PythonPackages <<< "$value"
-                    echo "    -> Python 包: ${Config_PythonPackages[*]}"
-                    ;;
-                nodejs_packages)
-                    IFS=' ' read -ra Config_NodejsPackages <<< "$value"
-                    echo "    -> Node.js 包: ${Config_NodejsPackages[*]}"
-                    ;;
-                download_dependencies)
-                    Config_DownloadDependencies="$value"
-                    ;;
-                download_recommends)
-                    Config_DownloadRecommends="$value"
-                    ;;
-                download_suggests)
-                    Config_DownloadSuggests="$value"
+                packages)
+                    IFS=' ' read -ra Config_Packages <<< "$value"
+                    echo "    -> 软件包: ${Config_Packages[*]}"
                     ;;
                 auto_package)
                     Config_AutoPackage="$value"
@@ -107,94 +83,118 @@ parse_config() {
 }
 
 # ============================================
-# 检查运行环境
+# 下载工具
 # ============================================
 
-check_environment() {
-    # 检查是否是 Debian/Ubuntu 系统
-    if [[ ! -f /etc/debian_version ]] && [[ ! -f /etc/lsb-release ]]; then
-        echo "错误: 此脚本需要在 Debian/Ubuntu 系统上运行"
-        echo "当前系统不支持 apt 包管理器"
-        exit 1
-    fi
+# 下载文件（支持 wget 和 curl）
+download_file() {
+    local url="$1"
+    local output="$2"
     
-    # 检查 apt-get
-    if ! command -v apt-get &> /dev/null; then
-        echo "错误: 未找到 apt-get 命令"
-        exit 1
-    fi
-    
-    # 检查是否需要 sudo
-    if [[ $EUID -ne 0 ]]; then
-        echo "提示: 需要 sudo 权限来更新包列表"
-        SUDO="sudo"
+    if command -v wget &> /dev/null; then
+        wget -q -O "$output" "$url"
+    elif command -v curl &> /dev/null; then
+        curl -sL -o "$output" "$url"
     else
-        SUDO=""
+        echo "错误: 需要 wget 或 curl"
+        exit 1
     fi
 }
 
 # ============================================
-# 下载包及其依赖
+# 包索引管理
 # ============================================
 
-# 下载单个包
+# 下载并解析包索引
+download_package_index() {
+    local component="$1"  # main, restricted, universe, multiverse
+    local index_file="$Config_DownloadDir/.Packages-${component}"
+    local index_url="$Config_Mirror/dists/$Config_UbuntuVersion/$component/binary-$Config_Architecture/Packages.gz"
+    
+    echo "  下载 $component 包索引..."
+    
+    # 下载索引文件
+    if ! download_file "$index_url" "${index_file}.gz" 2>/dev/null; then
+        echo "    警告: 无法下载 $component 索引，跳过"
+        return 1
+    fi
+    
+    # 解压
+    if command -v gunzip &> /dev/null; then
+        gunzip -f "${index_file}.gz" 2>/dev/null || true
+    elif command -v gzip &> /dev/null; then
+        gzip -df "${index_file}.gz" 2>/dev/null || true
+    else
+        echo "    错误: 需要 gunzip 或 gzip"
+        return 1
+    fi
+    
+    echo "    ✓ $component 索引下载完成"
+    return 0
+}
+
+# 从索引中查找包信息
+find_package_in_index() {
+    local package="$1"
+    local component="$2"
+    local index_file="$Config_DownloadDir/.Packages-${component}"
+    
+    if [[ ! -f "$index_file" ]]; then
+        return 1
+    fi
+    
+    # 在索引中查找包
+    # 格式：
+    # Package: unzip
+    # Filename: pool/main/u/unzip/unzip_6.0-26ubuntu3_amd64.deb
+    
+    grep -A 20 "^Package: ${package}$" "$index_file" 2>/dev/null | grep "^Filename:" | head -1 | awk '{print $2}'
+}
+
+# ============================================
+# 下载包
+# ============================================
+
 download_package() {
     local package="$1"
-    local downloaded=0
+    local found=false
     
-    echo "  处理: $package"
+    echo "  查找 $package..."
     
-    # 检查包是否已下载
-    if ls "$Config_DownloadDir"/${package}_*.deb 1> /dev/null 2>&1; then
-        echo "    ✓ 已存在，跳过"
-        return 0
-    fi
-    
-    # 下载包
-    if $Config_DownloadDependencies; then
-        # 获取依赖列表
-        local deps=""
+    # 在各个组件中查找包
+    for component in main restricted universe multiverse; do
+        local filename=$(find_package_in_index "$package" "$component")
         
-        # 获取 Depends
-        deps=$(apt-cache depends "$package" 2>/dev/null | grep "Depends:" | awk '{print $2}' | sort -u) || true
-        
-        # 获取 Recommends
-        if $Config_DownloadRecommends; then
-            local recs=$(apt-cache depends "$package" 2>/dev/null | grep "Recommends:" | awk '{print $2}' | sort -u) || true
-            deps="$deps $recs"
-        fi
-        
-        # 获取 Suggests
-        if $Config_DownloadSuggests; then
-            local sugs=$(apt-cache depends "$package" 2>/dev/null | grep "Suggests:" | awk '{print $2}' | sort -u) || true
-            deps="$deps $sugs"
-        fi
-        
-        # 下载依赖
-        for dep in $deps; do
-            # 跳过虚拟包和已下载的包
-            if ls "$Config_DownloadDir"/${dep}_*.deb 1> /dev/null 2>&1; then
-                continue
+        if [[ -n "$filename" ]]; then
+            echo "    找到: $filename (在 $component 中)"
+            
+            # 提取文件名
+            local deb_name=$(basename "$filename")
+            
+            # 检查是否已下载
+            if [[ -f "$Config_DownloadDir/$deb_name" ]]; then
+                echo "    ✓ 已存在，跳过"
+                found=true
+                break
             fi
             
-            # 下载依赖包
-            echo "    下载依赖: $dep"
-            if apt-get download "$dep" -o Dir::Cache::archives="$Config_DownloadDir" 2>/dev/null; then
-                ((downloaded++)) || true
+            # 下载
+            local deb_url="$Config_Mirror/$filename"
+            echo "    下载: $deb_url"
+            
+            if download_file "$deb_url" "$Config_DownloadDir/$deb_name"; then
+                echo "    ✓ 下载完成"
+                found=true
+                break
+            else
+                echo "    ✗ 下载失败"
             fi
-        done
-    fi
+        fi
+    done
     
-    # 下载主包
-    echo "    下载主包: $package"
-    if apt-get download "$package" -o Dir::Cache::archives="$Config_DownloadDir" 2>/dev/null; then
-        ((downloaded++)) || true
-    fi
-    
-    if [[ $downloaded -gt 0 ]]; then
-        echo "    ✓ 下载完成 ($downloaded 个文件)"
-    else
-        echo "    ✗ 下载失败"
+    if [[ "$found" = false ]]; then
+        echo "    ✗ 未找到包 $package"
+        return 1
     fi
     
     return 0
@@ -219,65 +219,84 @@ echo "=========================================="
 echo "  Ubuntu/Debian 离线包下载脚本"
 echo "=========================================="
 
-# 检查运行环境
-check_environment
-
 # 加载配置
 parse_config "$CONFIG_FILE"
 
 # 创建下载目录
 mkdir -p "$Config_DownloadDir"
 
-# 更新包列表
 echo ""
-echo "[*] 更新包列表..."
-$SUDO apt-get update -qq
+echo "配置信息:"
+echo "  Ubuntu 版本: $Config_UbuntuVersion"
+echo "  架构: $Config_Architecture"
+echo "  镜像源: $Config_Mirror"
+echo "  软件包数量: ${#Config_Packages[@]}"
+echo ""
+
+# 检查下载工具
+if ! command -v wget &> /dev/null && ! command -v curl &> /dev/null; then
+    echo "错误: 需要 wget 或 curl"
+    echo ""
+    echo "安装方法："
+    echo "  macOS: brew install wget 或 brew install curl"
+    echo "  Ubuntu: sudo apt install wget 或 sudo apt install curl"
+    exit 1
+fi
+
+# 下载包索引
+echo "[1/2] 下载包索引..."
+echo ""
+
+COMPONENTS=("main" "restricted" "universe" "multiverse")
+DOWNLOADED_INDEX=0
+
+for component in "${COMPONENTS[@]}"; do
+    if download_package_index "$component"; then
+        ((DOWNLOADED_INDEX++))
+    fi
+done
+
+if [[ $DOWNLOADED_INDEX -eq 0 ]]; then
+    echo ""
+    echo "错误: 无法下载任何包索引"
+    echo "请检查网络连接和镜像源配置"
+    exit 1
+fi
+
+echo ""
+echo "[2/2] 下载软件包..."
+echo ""
 
 # 统计变量
 DOWNLOADED=0
+FAILED=0
 SKIPPED=0
-TOTAL_PACKAGES=0
-
-# 合并所有包列表
-ALL_PACKAGES=()
-ALL_PACKAGES+=("${Config_BasicPackages[@]}")
-ALL_PACKAGES+=("${Config_DevPackages[@]}")
-ALL_PACKAGES+=("${Config_NetworkPackages[@]}")
-ALL_PACKAGES+=("${Config_PythonPackages[@]}")
-ALL_PACKAGES+=("${Config_NodejsPackages[@]}")
-
-# 去重
-IFS=' ' read -ra UNIQUE_PACKAGES <<< "$(echo "${ALL_PACKAGES[@]}" | tr ' ' '\n' | sort -u | tr '\n' ' ')"
-
-TOTAL_PACKAGES=${#UNIQUE_PACKAGES[@]}
-
-echo ""
-echo "[*] 准备下载 $TOTAL_PACKAGES 个软件包"
-echo ""
 
 # 下载所有包
-CURRENT=0
-for package in "${UNIQUE_PACKAGES[@]}"; do
-    ((CURRENT++))
-    echo "[$CURRENT/$TOTAL_PACKAGES] $package"
-    download_package "$package"
+for package in "${Config_Packages[@]}"; do
+    if download_package "$package"; then
+        ((DOWNLOADED++))
+    else
+        ((FAILED++))
+    fi
 done
 
+# 清理索引文件
+rm -f "$Config_DownloadDir"/.Packages-* 2>/dev/null || true
+
 # 创建包列表文件
-echo ""
-echo "[*] 生成包列表文件..."
 cat > "$Config_DownloadDir/package-list.txt" <<EOF
 配置文件: $CONFIG_FILE
-Ubuntu 版本: $(lsb_release -d 2>/dev/null | cut -f2 || cat /etc/debian_version)
+Ubuntu 版本: $Config_UbuntuVersion
+架构: $Config_Architecture
+镜像源: $Config_Mirror
 下载时间: $(date '+%Y-%m-%d %H:%M:%S')
-软件包数量: $TOTAL_PACKAGES
+成功下载: $DOWNLOADED
+下载失败: $FAILED
 
 软件包列表:
-$(echo "${UNIQUE_PACKAGES[@]}" | tr ' ' '\n' | sort)
+$(echo "${Config_Packages[@]}" | tr ' ' '\n' | sort)
 EOF
-
-# 统计下载的文件
-DOWNLOADED=$(ls -1 "$Config_DownloadDir"/*.deb 2>/dev/null | wc -l | tr -d ' ')
 
 # 检查是否需要打包
 NEED_PACKAGE=false
@@ -330,8 +349,8 @@ echo "  下载完成！"
 echo "=========================================="
 echo ""
 echo "统计信息:"
-echo "  • 软件包: $TOTAL_PACKAGES 个"
-echo "  • .deb 文件: $DOWNLOADED 个"
+echo "  • 成功下载: $DOWNLOADED 个包"
+echo "  • 下载失败: $FAILED 个包"
 echo ""
 echo "下载目录: $Config_DownloadDir/"
 if $Config_AutoPackage; then
@@ -345,5 +364,5 @@ if $Config_AutoPackage; then
 else
     echo "1. 将 $Config_DownloadDir 目录传输到离线环境"
 fi
-echo "3. 安装: cd $Config_DownloadDir && sudo bash install-packages.sh"
+echo "3. 安装: cd $Config_DownloadDir && sudo dpkg -i *.deb"
 echo ""
