@@ -261,6 +261,15 @@ fi
 if [ "$NEED_PACKAGE" = true ]; then
     echo ""
     echo "打包所有文件..."
+    
+    # 复制安装脚本和配置文件到下载目录
+    echo "复制安装脚本和配置文件..."
+    cp "$SCRIPT_DIR/install.sh" "$Config_DownloadDir/" 2>/dev/null || true
+    cp "$SCRIPT_DIR/README.md" "$Config_DownloadDir/" 2>/dev/null || true
+    cp "$SCRIPT_DIR/QUICKSTART.md" "$Config_DownloadDir/" 2>/dev/null || true
+    cp "$CONFIG_FILE" "$Config_DownloadDir/" 2>/dev/null || true
+    
+    # 打包（包含安装脚本和文档）
     tar -czf "$Config_ArchiveFile" "$Config_DownloadDir"
     echo "✓ 打包完成"
     
