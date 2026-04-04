@@ -1,0 +1,16 @@
+# 下载生成的文件
+offline-packages/
+linux-offline-dev-tools.tar.gz
+
+# 临时文件
+*.log
+*.tmp
+
+# macOS
+.DS_Store
+
+# 编辑器
+.vscode/
+.idea/
+*.swp
+*.swo
