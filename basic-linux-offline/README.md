@@ -14,17 +14,17 @@
 ### 第一步：在有网环境下载
 
 ```bash
-# 1. 给脚本执行权限
+# 1. 下载 Python 和 Node.js 安装包
 chmod +x download.sh
-
-# 2. 运行下载脚本（使用默认配置）
 ./download.sh
 
-# 3. 或使用自定义配置文件
-./download.sh -c /path/to/custom.conf
+# 2. 下载 Python 编译依赖（可选，如果目标系统缺少编译依赖）
+chmod +x download-python-deps.sh
+./download-python-deps.sh
 
-# 4. 等待下载完成
-# 会生成 offline-packages/ 目录和 linux-offline-dev-tools.tar.gz
+# 3. 会生成以下文件：
+# - offline-packages/ 目录和 linux-offline-dev-tools.tar.gz（Python/Node.js）
+# - python-build-deps/ 目录和 python-build-deps.tar.gz（编译依赖）
 ```
 
 ### 第二步：传输到离线环境
@@ -32,22 +32,25 @@ chmod +x download.sh
 ```bash
 # 将打包文件传输到离线 Linux 服务器
 scp linux-offline-dev-tools.tar.gz user@offline-server:/tmp/
+scp python-build-deps.tar.gz user@offline-server:/tmp/
 ```
 
 ### 第三步：在离线环境安装
 
 ```bash
-# 1. 解压
+# 1. 安装编译依赖（如果目标系统缺少）
 cd /tmp
+tar -xzf python-build-deps.tar.gz
+cd python-build-deps
+sudo dpkg -i *.deb
+cd ..
+
+# 2. 解压并安装 Python/Node.js
 tar -xzf linux-offline-dev-tools.tar.gz
-
-# 2. 进入目录
 cd offline-packages
-
-# 3. 运行安装脚本
 bash install.sh
 
-# 4. 重新加载配置
+# 3. 重新加载配置
 source ~/.bashrc  # 或 source ~/.zshrc
 ```
 
@@ -282,6 +285,82 @@ sudo yum install -y zlib-devel openssl-devel libffi-devel \
     ├── Python-*.tgz
     ├── fnm-linux.zip
     └── node-v*-linux-x64.tar.gz
+```
+
+## ❓ 常见问题
+
+### Ubuntu 24.04 提示需要 python-build 2.6.26
+
+**原因**：Ubuntu 24.04 是较新的系统，需要最新版本的 python-build 才能正确编译 Python。
+
+**解决方法**：
+
+```bash
+# 方法 1: 删除旧的 pyenv 包，重新下载最新版本
+cd basic-linux-offline
+rm -f offline-packages/pyenv-offline.tar.gz
+bash download.sh
+
+# 方法 2: 在离线环境更新 pyenv（如果有网络）
+cd ~/.pyenv
+git pull
+
+# 方法 3: 手动更新 python-build
+cd ~/.pyenv/plugins/python-build
+git pull
+```
+
+**验证 python-build 版本**：
+
+```bash
+# 在离线环境检查
+ls ~/.pyenv/plugins/python-build/
+cat ~/.pyenv/plugins/python-build/VERSION  # 或查看 .git/HEAD
+```
+
+**最低版本要求**：
+
+- Ubuntu 24.04 (noble): python-build >= 2.6.26
+- Ubuntu 22.04 (jammy): python-build >= 2.3.0
+- Ubuntu 20.04 (focal): python-build >= 2.0.0
+
+### Python 安装失败：缺少编译依赖
+
+**症状**：
+```
+ERROR: The Python ssl extension was not compiled. Missing the OpenSSL lib?
+```
+
+**解决方法**：
+
+```bash
+# 1. 下载编译依赖
+cd basic-linux-offline
+bash download-python-deps.sh
+
+# 2. 在离线环境安装依赖
+cd python-build-deps
+sudo dpkg -i *.deb
+
+# 3. 重新运行 Python 安装
+cd ../offline-packages
+bash install.sh
+```
+
+### 安装时提示找不到文件
+
+**原因**：可能解压位置不对或文件损坏。
+
+**解决方法**：
+
+```bash
+# 确保在正确的目录
+cd offline-packages
+ls -la  # 应该能看到 Python-*.tgz 等文件
+
+# 如果文件损坏，重新下载
+rm -rf offline-packages linux-offline-dev-tools.tar.gz
+bash download.sh
 ```
 
 ## 🔄 更新日志

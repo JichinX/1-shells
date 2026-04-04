@@ -170,9 +170,14 @@ if $Config_DownloadPyenv; then
         else
             git clone "$Config_PyenvRepo" pyenv-offline
         fi
+        
+        # 显示版本信息
+        if [ -f "pyenv-offline/.git/HEAD" ]; then
+            PYENV_COMMIT=$(cd pyenv-offline && git rev-parse --short HEAD)
+            echo "  pyenv 版本: $PYENV_COMMIT"
+        fi
+        
         # 打包时排除 macOS 隐藏文件和元数据
-        # --no-xattrs: 不包含扩展属性
-        # --exclude: 排除 macOS 系统文件
         tar -czf pyenv-offline.tar.gz \
             --no-xattrs \
             --exclude='.DS_Store' \
@@ -184,6 +189,7 @@ if $Config_DownloadPyenv; then
         ((DOWNLOADED++))
     else
         echo "  ✓ pyenv 已存在，跳过"
+        echo "  提示: 如需更新到最新版本，请删除 pyenv-offline.tar.gz 后重新运行"
         ((SKIPPED++))
     fi
 fi
