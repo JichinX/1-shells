@@ -1,0 +1,24 @@
+配置文件: /Users/jichinx/Projects/Code/claw-work/opensource/1-shells/basic-linux-offline/python-build-deps.conf
+Ubuntu 版本: jammy
+架构: amd64
+镜像源: http://mirrors.aliyun.com/ubuntu
+下载时间: 2026-04-04 14:37:11
+成功下载: 15
+下载失败: 0
+
+依赖包列表:
+build-essential
+libbz2-dev
+libffi-dev
+libgdbm-dev
+liblzma-dev
+libncurses5-dev
+libncursesw5-dev
+libreadline-dev
+libsqlite3-dev
+libssl-dev
+libxml2-dev
+libxslt1-dev
+tk-dev
+uuid-dev
+zlib1g-dev
