@@ -102,6 +102,68 @@ download_file() {
 }
 
 # ============================================
+# Ubuntu 版本号处理
+# ============================================
+
+# 版本号转代号
+version_to_codename() {
+    local version="$1"
+    
+    # 如果已经是代号（全小写字母），直接返回
+    if [[ "$version" =~ ^[a-z]+$ ]]; then
+        echo "$version"
+        return 0
+    fi
+    
+    # 版本号转代号
+    case "$version" in
+        24.04) echo "noble" ;;
+        23.10) echo "mantic" ;;
+        23.04) echo "lunar" ;;
+        22.10) echo "kinetic" ;;
+        22.04) echo "jammy" ;;
+        21.10) echo "impish" ;;
+        21.04) echo "hirsute" ;;
+        20.10) echo "groovy" ;;
+        20.04) echo "focal" ;;
+        19.10) echo "eoan" ;;
+        19.04) echo "disco" ;;
+        18.10) echo "cosmic" ;;
+        18.04) echo "bionic" ;;
+        17.10) echo "artful" ;;
+        17.04) echo "zesty" ;;
+        16.10) echo "yakkety" ;;
+        16.04) echo "xenial" ;;
+        *)
+            echo "错误: 未知的 Ubuntu 版本: $version" >&2
+            echo "支持的版本: 24.04, 22.04, 20.04, 18.04, 16.04 等" >&2
+            return 1
+            ;;
+    esac
+}
+
+# 自动检测 Ubuntu 版本（如果在 Ubuntu 系统上运行）
+detect_ubuntu_version() {
+    if [[ -f /etc/lsb-release ]]; then
+        source /etc/lsb-release
+        if [[ -n "$DISTRIB_RELEASE" ]]; then
+            echo "$DISTRIB_RELEASE"
+            return 0
+        fi
+    fi
+    
+    if [[ -f /etc/os-release ]]; then
+        source /etc/os-release
+        if [[ "$ID" == "ubuntu" ]] && [[ -n "$VERSION_ID" ]]; then
+            echo "$VERSION_ID"
+            return 0
+        fi
+    fi
+    
+    return 1
+}
+
+# ============================================
 # 包索引管理
 # ============================================
 
@@ -204,16 +266,71 @@ download_package() {
 # 主脚本
 # ============================================
 
+# 显示帮助信息
+show_help() {
+    cat <<EOF
+用法: $0 [选项]
+
+选项:
+  -c, --config FILE      配置文件路径（默认: packages.conf）
+  -v, --version VERSION  Ubuntu 版本号或代号（如: 22.04 或 jammy）
+  -a, --arch ARCH        架构（如: amd64, arm64）
+  -m, --mirror URL       镜像源地址
+  -h, --help             显示帮助信息
+
+示例:
+  $0                              # 使用默认配置
+  $0 -v 22.04                     # 指定 Ubuntu 22.04
+  $0 -v jammy -a arm64            # Ubuntu 22.04 ARM64
+  $0 -c custom.conf               # 使用自定义配置文件
+
+支持的 Ubuntu 版本:
+  24.04 (noble), 22.04 (jammy), 20.04 (focal), 18.04 (bionic)
+  以及其他版本: 23.10, 23.04, 22.10, 21.10, 21.04, 20.10, 19.10, 19.04, 18.10, 17.10, 17.04, 16.10, 16.04
+EOF
+}
+
 # 获取脚本所在目录
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# 配置文件路径（默认在同目录下）
-CONFIG_FILE="${1:-$SCRIPT_DIR/packages.conf}"
+# 默认配置文件路径
+CONFIG_FILE="$SCRIPT_DIR/packages.conf"
 
-# 如果第一个参数是 -c 或 --config，则读取第二个参数作为配置文件
-if [[ "$1" == "-c" || "$1" == "--config" ]]; then
-    CONFIG_FILE="$2"
-fi
+# 命令行参数
+CMD_UBUNTU_VERSION=""
+CMD_ARCHITECTURE=""
+CMD_MIRROR=""
+
+# 解析命令行参数
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -c|--config)
+            CONFIG_FILE="$2"
+            shift 2
+            ;;
+        -v|--version)
+            CMD_UBUNTU_VERSION="$2"
+            shift 2
+            ;;
+        -a|--arch)
+            CMD_ARCHITECTURE="$2"
+            shift 2
+            ;;
+        -m|--mirror)
+            CMD_MIRROR="$2"
+            shift 2
+            ;;
+        -h|--help)
+            show_help
+            exit 0
+            ;;
+        *)
+            echo "错误: 未知选项: $1"
+            show_help
+            exit 1
+            ;;
+    esac
+done
 
 echo "=========================================="
 echo "  Ubuntu/Debian 离线包下载脚本"
@@ -221,6 +338,32 @@ echo "=========================================="
 
 # 加载配置
 parse_config "$CONFIG_FILE"
+
+# 命令行参数覆盖配置文件
+[[ -n "$CMD_UBUNTU_VERSION" ]] && Config_UbuntuVersion="$CMD_UBUNTU_VERSION"
+[[ -n "$CMD_ARCHITECTURE" ]] && Config_Architecture="$CMD_ARCHITECTURE"
+[[ -n "$CMD_MIRROR" ]] && Config_Mirror="$CMD_MIRROR"
+
+# 自动检测 Ubuntu 版本（如果未指定且在 Ubuntu 上运行）
+if [[ -z "$Config_UbuntuVersion" ]] || [[ "$Config_UbuntuVersion" == "auto" ]]; then
+    echo "[*] 尝试自动检测 Ubuntu 版本..."
+    if DETECTED_VERSION=$(detect_ubuntu_version); then
+        Config_UbuntuVersion="$DETECTED_VERSION"
+        echo "    检测到版本: $Config_UbuntuVersion"
+    else
+        echo "    无法自动检测，使用默认版本: jammy (22.04)"
+        Config_UbuntuVersion="jammy"
+    fi
+fi
+
+# 版本号转代号
+echo "[*] 处理 Ubuntu 版本: $Config_UbuntuVersion"
+if CODENAME=$(version_to_codename "$Config_UbuntuVersion"); then
+    Config_UbuntuVersion="$CODENAME"
+    echo "    代号: $Config_UbuntuVersion"
+else
+    exit 1
+fi
 
 # 创建下载目录
 mkdir -p "$Config_DownloadDir"
