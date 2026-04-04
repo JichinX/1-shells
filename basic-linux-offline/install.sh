@@ -2,13 +2,45 @@
 # 一键安装脚本 - 在离线环境运行
 # 用途：安装 pyenv、fnm、Python、Node.js
 
-set -e
+# 不使用 set -e，手动处理错误以提供更好的错误信息
+# set -e
 
 # 默认配置
 OFFLINE_DIR="offline-packages"
 CONFIG_FILE="versions.conf"
 PYTHON_VERSIONS=""
 NODE_VERSIONS=""
+
+# 错误处理函数
+error_exit() {
+    echo ""
+    echo "=========================================="
+    echo "  错误: $1"
+    echo "=========================================="
+    echo ""
+    exit 1
+}
+
+# 检查命令是否存在
+check_command() {
+    if ! command -v "$1" &> /dev/null; then
+        error_exit "未找到命令: $1\n请先安装 $1 或检查 PATH 环境变量"
+    fi
+}
+
+# 检查文件是否存在
+check_file() {
+    if [ ! -f "$1" ]; then
+        error_exit "文件不存在: $1"
+    fi
+}
+
+# 检查目录是否存在
+check_dir() {
+    if [ ! -d "$1" ]; then
+        error_exit "目录不存在: $1"
+    fi
+}
 
 # 解析配置文件
 parse_config() {
@@ -97,8 +129,20 @@ echo "[1/4] 安装 pyenv..."
 if [ -d "$HOME/.pyenv" ]; then
     echo "  pyenv 已存在，跳过安装"
 else
-    tar -xzf pyenv-offline.tar.gz
-    mv pyenv-offline ~/.pyenv
+    # 检查文件
+    if [ ! -f "pyenv-offline.tar.gz" ]; then
+        error_exit "找不到 pyenv-offline.tar.gz 文件\n请确保在正确的目录运行此脚本"
+    fi
+    
+    echo "  解压 pyenv..."
+    if ! tar -xzf pyenv-offline.tar.gz; then
+        error_exit "解压 pyenv-offline.tar.gz 失败"
+    fi
+    
+    echo "  移动到 ~/.pyenv..."
+    if ! mv pyenv-offline ~/.pyenv; then
+        error_exit "移动 pyenv 目录失败"
+    fi
     
     # 配置环境变量
     if ! grep -q 'PYENV_ROOT' $RC_FILE; then
@@ -112,7 +156,11 @@ else
     # 立即生效
     export PYENV_ROOT="$HOME/.pyenv"
     export PATH="$PYENV_ROOT/bin:$PATH"
-    eval "$(pyenv init -)"
+    
+    echo "  初始化 pyenv..."
+    if ! eval "$(pyenv init -)"; then
+        error_exit "pyenv 初始化失败"
+    fi
     
     echo "  ✓ pyenv 安装完成"
 fi
@@ -142,7 +190,14 @@ for PYTHON_VERSION in $PYTHON_VERSIONS; do
             echo "    Python $PYTHON_VERSION 已安装"
         else
             echo "    正在安装 Python $PYTHON_VERSION（可能需要几分钟）..."
-            pyenv install $PYTHON_VERSION
+            if ! pyenv install $PYTHON_VERSION; then
+                echo "    ✗ Python $PYTHON_VERSION 安装失败"
+                echo "    可能的原因："
+                echo "      - 缺少编译依赖（build-essential, libssl-dev, zlib1g-dev 等）"
+                echo "      - 磁盘空间不足"
+                echo "      - Python 源码包损坏"
+                continue
+            fi
             echo "    ✓ Python $PYTHON_VERSION 安装完成"
         fi
     else
@@ -165,12 +220,26 @@ echo "[3/4] 安装 fnm..."
 if command -v fnm &> /dev/null; then
     echo "  fnm 已安装，跳过"
 else
-    unzip -q -o fnm-linux.zip
-    chmod +x fnm
+    # 检查文件
+    if [ ! -f "fnm-linux.zip" ]; then
+        error_exit "找不到 fnm-linux.zip 文件"
+    fi
+    
+    echo "  解压 fnm..."
+    if ! unzip -q -o fnm-linux.zip; then
+        error_exit "解压 fnm-linux.zip 失败"
+    fi
+    
+    echo "  设置权限..."
+    if ! chmod +x fnm; then
+        error_exit "设置 fnm 执行权限失败"
+    fi
     
     # 安装到用户目录
     mkdir -p ~/.local/bin
-    mv fnm ~/.local/bin/
+    if ! mv fnm ~/.local/bin/; then
+        error_exit "移动 fnm 到 ~/.local/bin/ 失败"
+    fi
     
     # 配置环境变量
     if ! grep -q 'fnm' $RC_FILE; then
@@ -182,7 +251,11 @@ else
     
     # 立即生效
     export PATH="$HOME/.local/bin:$PATH"
-    eval "$(fnm env --shell bash)"
+    
+    echo "  初始化 fnm..."
+    if ! eval "$(fnm env --shell bash)"; then
+        error_exit "fnm 初始化失败"
+    fi
     
     echo "  ✓ fnm 安装完成"
 fi
@@ -208,13 +281,25 @@ for NODE_VERSION in $NODE_VERSIONS; do
         if [ -d ~/.fnm/node-versions/v$NODE_VERSION ]; then
             echo "    Node.js v$NODE_VERSION 已存在"
         else
-            tar -xzf node-v$NODE_VERSION-linux-x64.tar.gz
-            mv node-v$NODE_VERSION-linux-x64 ~/.fnm/node-versions/v$NODE_VERSION
+            echo "    解压 Node.js v$NODE_VERSION..."
+            if ! tar -xzf node-v$NODE_VERSION-linux-x64.tar.gz; then
+                echo "    ✗ 解压失败"
+                continue
+            fi
+            
+            if ! mv node-v$NODE_VERSION-linux-x64 ~/.fnm/node-versions/v$NODE_VERSION; then
+                echo "    ✗ 移动失败"
+                continue
+            fi
             echo "    ✓ Node.js v$NODE_VERSION 解压完成"
         fi
         
         # 使用 fnm 安装
-        fnm install v$NODE_VERSION
+        echo "    注册到 fnm..."
+        if ! fnm install v$NODE_VERSION; then
+            echo "    ✗ fnm 安装失败"
+            continue
+        fi
         echo "    ✓ Node.js v$NODE_VERSION 安装完成"
     else
         echo "    警告: 找不到 node-v$NODE_VERSION-linux-x64.tar.gz"
@@ -238,22 +323,40 @@ echo "=========================================="
 echo ""
 
 echo "Python 环境:"
-echo "  版本: $(python --version 2>&1)"
-echo "  路径: $(which python)"
+if command -v python &> /dev/null; then
+    echo "  版本: $(python --version 2>&1)"
+    echo "  路径: $(which python)"
+else
+    echo "  警告: python 命令不可用"
+fi
 echo ""
 
 echo "Node.js 环境:"
-echo "  版本: $(node --version)"
-echo "  路径: $(which node)"
-echo "  npm: $(npm --version)"
+if command -v node &> /dev/null; then
+    echo "  版本: $(node --version 2>&1)"
+    echo "  路径: $(which node)"
+    if command -v npm &> /dev/null; then
+        echo "  npm: $(npm --version 2>&1)"
+    fi
+else
+    echo "  警告: node 命令不可用"
+fi
 echo ""
 
 echo "pyenv 版本:"
-pyenv versions
+if command -v pyenv &> /dev/null; then
+    pyenv versions
+else
+    echo "  警告: pyenv 命令不可用"
+fi
 echo ""
 
 echo "fnm 版本:"
-fnm list
+if command -v fnm &> /dev/null; then
+    fnm list
+else
+    echo "  警告: fnm 命令不可用"
+fi
 echo ""
 
 echo "=========================================="

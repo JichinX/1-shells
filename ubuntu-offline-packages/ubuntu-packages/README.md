@@ -22,11 +22,36 @@
 ### 1. 在 macOS/Linux 上下载软件包
 
 ```bash
-# 编辑配置文件，指定需要下载的软件包
+# 方式 1: 使用配置文件
 vim packages.conf
-
-# 运行下载脚本
 bash download-packages.sh
+
+# 方式 2: 使用命令行参数
+bash download-packages.sh -v 22.04 -a amd64
+
+# 方式 3: 指定版本号
+bash download-packages.sh --version 20.04
+
+# 方式 4: 自动检测（如果在 Ubuntu 上运行）
+bash download-packages.sh --version auto
+```
+
+### 命令行选项
+
+```bash
+bash download-packages.sh [选项]
+
+选项:
+  -c, --config FILE      配置文件路径（默认: packages.conf）
+  -v, --version VERSION  Ubuntu 版本号或代号（如: 22.04 或 jammy）
+  -a, --arch ARCH        架构（如: amd64, arm64）
+  -m, --mirror URL       镜像源地址
+  -h, --help             显示帮助信息
+
+示例:
+  bash download-packages.sh -v 22.04              # Ubuntu 22.04
+  bash download-packages.sh -v jammy -a arm64     # Ubuntu 22.04 ARM64
+  bash download-packages.sh -v 20.04 -m https://mirrors.tuna.tsinghua.edu.cn/ubuntu
 ```
 
 ### 2. 传输到离线 Ubuntu 环境
