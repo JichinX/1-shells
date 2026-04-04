@@ -174,6 +174,10 @@ echo "[2/4] 安装 Python..."
 # 创建缓存目录
 mkdir -p ~/.pyenv/cache
 
+# 设置 pyenv 使用本地缓存（不下载）
+export PYTHON_BUILD_CACHE_PATH="$HOME/.pyenv/cache"
+export PYTHON_BUILD_SKIP_MIRROR=1
+
 # 获取第一个版本作为默认版本
 DEFAULT_PYTHON_VERSION=$(echo $PYTHON_VERSIONS | awk '{print $1}')
 
@@ -190,18 +194,23 @@ for PYTHON_VERSION in $PYTHON_VERSIONS; do
             echo "    Python $PYTHON_VERSION 已安装"
         else
             echo "    正在安装 Python $PYTHON_VERSION（可能需要几分钟）..."
-            if ! pyenv install $PYTHON_VERSION; then
+            echo "    使用本地源码包，不下载..."
+            
+            # 使用 --keep 选项保留源码，--skip-existing 跳过已存在的
+            if ! pyenv install --keep --skip-existing $PYTHON_VERSION; then
                 echo "    ✗ Python $PYTHON_VERSION 安装失败"
                 echo "    可能的原因："
                 echo "      - 缺少编译依赖（build-essential, libssl-dev, zlib1g-dev 等）"
                 echo "      - 磁盘空间不足"
                 echo "      - Python 源码包损坏"
+                echo "      - 缓存文件名不匹配（应为 Python-$PYTHON_VERSION.tgz）"
                 continue
             fi
             echo "    ✓ Python $PYTHON_VERSION 安装完成"
         fi
     else
         echo "    警告: 找不到 Python-$PYTHON_VERSION.tgz"
+        echo "    提示: 请确保文件名格式为 Python-$PYTHON_VERSION.tgz"
     fi
 done
 
