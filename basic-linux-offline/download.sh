@@ -6,6 +6,14 @@
 set -e
 
 # ============================================
+# macOS 特殊处理：防止生成 ._ 文件
+# ============================================
+# COPYFILE_DISABLE=1 告诉 macOS 不要在 tar 包中包含 AppleDouble 文件
+# 这些 ._ 文件是 macOS 资源分支（resource fork）的 AppleDouble 格式表示
+# 在非 macOS 系统上解压时会产生多余的文件
+export COPYFILE_DISABLE=1
+
+# ============================================
 # 配置文件解析函数
 # ============================================
 
@@ -162,7 +170,15 @@ if $Config_DownloadPyenv; then
         else
             git clone "$Config_PyenvRepo" pyenv-offline
         fi
-        tar -czf pyenv-offline.tar.gz pyenv-offline
+        # 打包时排除 macOS 隐藏文件和元数据
+        # --no-xattrs: 不包含扩展属性
+        # --exclude: 排除 macOS 系统文件
+        tar -czf pyenv-offline.tar.gz \
+            --no-xattrs \
+            --exclude='.DS_Store' \
+            --exclude='._*' \
+            --exclude='.git' \
+            pyenv-offline
         rm -rf pyenv-offline
         echo "  ✓ pyenv 下载完成"
         ((DOWNLOADED++))
@@ -269,7 +285,7 @@ if [ "$NEED_PACKAGE" = true ]; then
     cp "$SCRIPT_DIR/QUICKSTART.md" "$Config_DownloadDir/" 2>/dev/null || true
     cp "$CONFIG_FILE" "$Config_DownloadDir/" 2>/dev/null || true
     
-    # 清理 macOS 隐藏文件
+    # 清理 macOS 隐藏文件（双重保险）
     echo "清理 macOS 系统文件..."
     find "$Config_DownloadDir" -name '.DS_Store' -type f -delete 2>/dev/null || true
     find "$Config_DownloadDir" -name '._*' -type f -delete 2>/dev/null || true
@@ -278,9 +294,18 @@ if [ "$NEED_PACKAGE" = true ]; then
     find "$Config_DownloadDir" -name '.fseventsd' -type d -exec rm -rf {} + 2>/dev/null || true
     find "$Config_DownloadDir" -name '.TemporaryItems' -type d -exec rm -rf {} + 2>/dev/null || true
     
+    # 使用 dot_clean 合并资源分支（可选，进一步确保无 ._ 文件）
+    if command -v dot_clean &> /dev/null; then
+        dot_clean -m "$Config_DownloadDir" 2>/dev/null || true
+    fi
+    
     # 打包（包含安装脚本和文档，排除 macOS 隐藏文件）
+    # COPYFILE_DISABLE=1 已在脚本开头设置
+    # --no-xattrs: 不包含扩展属性（bsdtar 特有）
+    # --exclude: 排除 macOS 系统文件
     echo "打包文件..."
     tar -czf "$Config_ArchiveFile" \
+        --no-xattrs \
         --exclude='.DS_Store' \
         --exclude='._*' \
         --exclude='.Trashes' \
