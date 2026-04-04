@@ -2,12 +2,113 @@
 
 快速在离线 Linux 环境中安装 Python 和 Node.js 开发环境。
 
-## 包含内容
+## 📦 包含内容
 
 - **pyenv** - Python 版本管理器
 - **fnm** - Node.js 版本管理器（Fast Node Manager）
-- **Python** - 预下载的 Python 版本（3.12.0, 3.11.8）
-- **Node.js** - 预下载的 Node.js 版本（v20.11.0, v18.19.0）
+- **Python** - 预下载的 Python 版本（可配置）
+- **Node.js** - 预下载的 Node.js 版本（可配置）
+
+## 🚀 快速开始
+
+### 第一步：在有网环境下载
+
+```bash
+# 1. 给脚本执行权限
+chmod +x download.sh
+
+# 2. 运行下载脚本（使用默认配置）
+./download.sh
+
+# 3. 或使用自定义配置文件
+./download.sh -c /path/to/custom.conf
+
+# 4. 等待下载完成
+# 会生成 offline-packages/ 目录和 linux-offline-dev-tools.tar.gz
+```
+
+### 第二步：传输到离线环境
+
+```bash
+# 将打包文件传输到离线 Linux 服务器
+scp linux-offline-dev-tools.tar.gz user@offline-server:/tmp/
+```
+
+### 第三步：在离线环境安装
+
+```bash
+# 1. 解压
+cd /tmp
+tar -xzf linux-offline-dev-tools.tar.gz
+
+# 2. 给脚本执行权限
+chmod +x install.sh
+
+# 3. 运行安装脚本
+./install.sh
+
+# 4. 重新加载配置
+source ~/.bashrc  # 或 source ~/.zshrc
+```
+
+## ⚙️ 配置文件
+
+编辑 `versions.conf` 自定义下载选项：
+
+```ini
+# Python 版本列表
+python_versions = 3.12.0 3.11.8 3.10.13
+
+# Node.js 版本列表
+node_versions = 20.11.0 18.19.0 16.20.2
+
+# 使用国内镜像加速
+node_mirror = https://npmmirror.com/mirrors/node
+
+# 选择性下载
+download_python = true
+download_nodejs = true
+download_pyenv = true
+download_fnm = true
+```
+
+### 配置选项说明
+
+**基础配置**：
+- `download_dir` - 下载目录
+- `archive_file` - 打包文件名
+
+**Python 配置**：
+- `python_versions` - Python 版本列表（空格分隔）
+- `python_mirror` - Python 源码下载源
+
+**Node.js 配置**：
+- `node_versions` - Node.js 版本列表（空格分隔）
+- `node_mirror` - Node.js 二进制包下载源
+- `node_arch` - 架构（linux-x64 / linux-arm64）
+
+**下载选项**：
+- `download_python` - 是否下载 Python
+- `download_nodejs` - 是否下载 Node.js
+- `download_pyenv` - 是否下载 pyenv
+- `download_fnm` - 是否下载 fnm
+
+**打包选项**：
+- `auto_package` - 是否自动打包
+- `clean_after_package` - 打包后是否删除源文件
+
+### 使用自定义配置
+
+```bash
+# 方式 1：使用默认配置文件（versions.conf）
+./download.sh
+
+# 方式 2：指定配置文件
+./download.sh -c /path/to/custom.conf
+./download.sh --config /path/to/custom.conf
+```
+
+## 📋 使用步骤
 
 ## 使用步骤
 
