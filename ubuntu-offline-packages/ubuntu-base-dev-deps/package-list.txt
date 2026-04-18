@@ -1,0 +1,37 @@
+配置文件: ubuntu-base-dev-deps.conf
+Ubuntu 版本: noble
+架构: amd64
+镜像源: http://mirrors.aliyun.com/ubuntu
+下载时间: 2026-04-04 15:13:14
+成功下载: 26
+下载失败: 2
+
+软件包列表:
+autoconf
+automake
+build-essential
+ca-certificates
+curl
+git
+htop
+libbz2-dev
+libffi-dev
+liblzma-dev
+libncurses5-dev
+libncursesw5-dev
+libreadline-dev
+libsqlite3-dev
+libssl-dev
+libtool
+lsof
+ltrace
+p7zip-full
+pkg-config
+strace
+tree
+unzip
+vim
+wget
+xz-utils
+zip
+zlib1g-dev

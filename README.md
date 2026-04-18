@@ -10,6 +10,10 @@
 | [vscode-offline-bundle](./vscode-offline-bundle/) | VSCode 离线资源一键下载，含 Server、扩展、code-server、openvscode-server |
 | [jetbrains-offline-bundle](./jetbrains-offline-bundle/) | JetBrains 离线资源一键下载，支持 IntelliJ IDEA、PyCharm、WebStorm 等 |
 | [msys2-offline-bundle](./msys2-offline-bundle/) | MSYS2 离线环境一键配置，含 Zsh、Oh My Zsh、Starship、现代 CLI 工具 |
+| [offline-claude](./offline-claude/) | Claude Code 离线安装包下载工具，支持 Linux/macOS 多平台 |
+| [basic-linux-offline](./basic-linux-offline/) | Python/Node.js 离线安装包，用于离线 Linux 环境快速部署 |
+| [ubuntu-offline-packages](./ubuntu-offline-packages/) | Ubuntu 离线包下载工具，支持基础开发依赖、编译工具链等 |
+| [module-offline](./module-offline/) | PowerShell 模块离线包，用于 Windows 离线环境模块安装 |
 
 ## 快速使用
 
@@ -68,6 +72,19 @@ Windows 环境离线配置，提供接近原生 Linux 的 shell 体验：
 
 # 在 MSYS2 中配置 Zsh 环境
 bash ~/scripts/offline-setup-zsh.sh
+```
+
+### Claude Code 离线安装
+
+```bash
+git clone https://github.com/JichinX/1-shells.git
+cd 1-shells/offline-claude
+
+# 自动检测平台下载
+./download-claude.sh
+
+# 或指定平台
+./download-claude.sh linux-x64 ./output
 ```
 
 详见各脚本目录下的 README。
