@@ -6,3 +6,27 @@
 
 # WorkBuddy
 .workbuddy/
+
+# 离线包二进制文件
+*.deb
+*.rpm
+*.tar.gz
+*.tar.xz
+*.zip
+*.7z
+
+# APT 仓库索引文件
+.Packages-*
+.Packages
+.Release
+.InRelease
+.Release.gpg
+
+# 离线资源目录（仅保留脚本）
+basic-linux-offline/python-build-deps/
+basic-linux-offline/*.tar.gz
+ubuntu-offline-packages/ubuntu-base-dev-deps/
+ubuntu-offline-packages/*.tar.gz
+jetbrains-offline-bundle/output/
+vscode-offline-bundle/output/
+msys2-offline-bundle/offline-resources/
